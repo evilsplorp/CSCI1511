@@ -1,0 +1,28 @@
+What is the difference between dictionaries and lists?
+
+A list is a collection of data in a comma separated list enclosed by square brackets 
+(not to be confused with a tuple, which is enclosed by parenthesis). A list is accessed 
+via an index value, starting at 0. There are no restrictions on duplicates. 
+
+List example:
+
+authors = ["J.R.R. Tolkien", "Stephen King", "Jim Butcher"]
+print(authors[1]) 
+
+This would display the second item in the list.
+
+A dictionary is a collection of key-value pairs (joined by a colon) which are then 
+separated by commas within curly braces. The dictionary is accessed via the unique key name. 
+The key portion MUST be unique, but the values are permitted to be duplicates. 
+Both can be modified (unlike a tuple), which includes changing, adding, or deleting items from the dataset.
+
+Dictionary example:
+
+genre_by_author = {
+	"Tolkien": "fantasy",
+	"King": "horror",
+	"Butcher": "urban fantasy"
+	}
+print(genre_by_author["Tolkien"])
+
+This would display fantasy, as that’s the genre assigned to Tolkien.
