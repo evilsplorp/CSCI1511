@@ -1,15 +1,17 @@
 """
-Playlist_Generator 1.1
+Playlist_Generator 1.2
 Raymond Black
 Creates a song playlist based on user input
-Resources: used examples from the readings and from the lecture on 2026-09-09
-2026-09-10
+Resources: used examples from the readings and from the lecture on 2026-09-09;
+did a Google search to figure out how to push the user back to the top (continue);
+added a limit to the playlist (mostly so I could add a new if/else)
+2026-09-11
 """
 
 # I wanted the ability to randomize the tracks when it printed them out. 
 import random
 
-# empty list for playlist items
+# empty list for playlist items. I didn't use a dictionary to allow duplicate artists / songs
 playlist = []
 
 print("--- Create a playlist ---")
@@ -22,13 +24,23 @@ while getting_songs:
     artist = input("\nEnter the artist name: ").strip()
     song_title = input("Enter the song title: ").strip()
 
+    # added a catch to force at least once entry. This let me drop the last
+    # if/else statement
+    if not artist or not song_title:
+        print("Please enter at least one artist and song title.")
+        continue
+
     # make it a single value to put in the list
     track = f"{song_title} - {artist}"
     playlist.append(track)
     print(f"Added: '{track} to your playlist.")
 
-    # Ask for more songs
-    more_music = input("\nAdd more music? (yes/no): ").lower()
+    # Ask for more songs; added a limit 
+    if len(playlist) == 5:
+        print("There's a limit of 5 songs. Sorry about that.")
+        getting_songs = False
+    else:
+        more_music = input("\nAdd more music? (yes/no): ").lower()
 
     # Adding more music or not?
     if more_music != 'yes' and more_music != 'y':
@@ -36,23 +48,17 @@ while getting_songs:
 
 # display the playlist
 
+# will remove on next version. No longer needed as I added a catch, above
 # make sure they entered some songs
-if len(playlist) == 0:
-    print("I think you forget to enter some songs.")
-else:
-    # shuffle try 1
-    random.shuffle(playlist)
-    print("\nShuffled Playlist")
-    for current_track in playlist:
-        print(f"🎵 {current_track}")
+# if len(playlist) == 0:
+#     print("I think you forget to enter some songs.")
+# else:
 
-# original code, to be removed before submitting project.
-#     track_no = 1
-#     for track in playlist:
-#         print(f"{track_no}. {track}")
-#         track_no += 1
-
-# print("\n🎵 Here's your playlist! Enjoy! 🎵")
+# shuffle
+random.shuffle(playlist)
+print("\nShuffled Playlist")
+for current_track in playlist:
+    print(f"🎵 {current_track}")
 
 
-
+print(playlist)
