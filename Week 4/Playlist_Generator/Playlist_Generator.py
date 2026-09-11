@@ -1,10 +1,13 @@
 """
-Playlist_Generator 1.0
+Playlist_Generator 1.1
 Raymond Black
 Creates a song playlist based on user input
 Resources: used examples from the readings and from the lecture on 2026-09-09
 2026-09-10
 """
+
+# I wanted the ability to randomize the tracks when it printed them out. 
+import random
 
 # empty list for playlist items
 playlist = []
@@ -15,9 +18,9 @@ print("--- Create a playlist ---")
 getting_songs = True
 while getting_songs:
 
-    # input artist and song
-    artist = input("\nEnter the artist name: ")
-    song_title = input("Enter the song title: ")
+    # input artist and song; added the strip() to remove leading and trailing spaces.
+    artist = input("\nEnter the artist name: ").strip()
+    song_title = input("Enter the song title: ").strip()
 
     # make it a single value to put in the list
     track = f"{song_title} - {artist}"
@@ -35,14 +38,21 @@ while getting_songs:
 
 # make sure they entered some songs
 if len(playlist) == 0:
-    print("I think you forget to enter some songs,")
+    print("I think you forget to enter some songs.")
 else:
-    track_no = 1
-    for track in playlist:
-        print(f"{track_no}. {track}")
-        track_no += 1
+    # shuffle try 1
+    random.shuffle(playlist)
+    print("\nShuffled Playlist")
+    for current_track in playlist:
+        print(f"🎵 {current_track}")
 
-print("\n🎵 Here's your playlist! Enjoy! 🎵")
+# original code, to be removed before submitting project.
+#     track_no = 1
+#     for track in playlist:
+#         print(f"{track_no}. {track}")
+#         track_no += 1
+
+# print("\n🎵 Here's your playlist! Enjoy! 🎵")
 
 
 
