@@ -1,5 +1,5 @@
 """
-Geometry Calculator
+Geometry Calculator v1.1
 Raymond Black
 This application will calculate either the area and circumference of a circle
 or the area and perimeter of a rectangle.
@@ -12,21 +12,26 @@ from rectangle import calc_area as rca, calc_perimeter as cp
 # due to the replication of the calc_area function names,
 # aliases were used to differentiate the circle and rectangle calculations
 
+# I need to learn to read through the whole instructions. Refactor time...
+
+def get_positive_number(question):
+    while True:
+        try:
+            value = float(input(question))
+            if value <= 0:
+                print("Please enter a positive number.")
+                continue
+            return value
+        except ValueError:
+            print("Please enter a positive number or positive decimal number.")
+
 print("---===Welcome to the Geometry Calculator===---\n")
 
 calculating = True
 while calculating:
     shape = input("\nDo you want to calculate information for a circle or rectangle? (q to quit)").lower()
     if shape == "circle" or shape == 'c':
-        while True:
-            try:
-                user_radius = float(input("\nWhat's the radius of the circle? "))
-                if user_radius <= 0:
-                    print("Please enter a positive number.")
-                    continue
-                break
-            except ValueError:
-                print("Please enter a positive number or positive decimal number.")
+        user_radius = get_positive_number("\nWhat's the radius of the circle? ")
         while True:
             which_circle_calc = input("\nDid you want to calculate the circumference, the area, or both for the circle? (c/a/b)").lower()
             if which_circle_calc == 'circumference' or which_circle_calc == 'c':
@@ -49,24 +54,8 @@ while calculating:
                 print("I think you mistyped. ")
 
     elif shape == "rectangle" or shape == 'r':
-        while True:
-            try:
-                user_height = float(input("\nWhat is the height of the rectangle? "))
-                if user_height <= 0:
-                    print("Please enter a positive number.")
-                    continue
-                break
-            except ValueError:
-                print("Please enter a positive number or positive decimal number.")
-        while True:
-            try:
-                user_width = float(input("\nWhat is the width of the rectangle? "))
-                if user_width <= 0:
-                    print("Please enter a positive number.")
-                    continue
-                break
-            except ValueError:
-                print("Please enter a positive number or positive decimal number.")
+        user_height = get_positive_number("\nWhat is the height of the rectangle? ")
+        user_width = get_positive_number("\nWhat is the width of the rectangle? ")
 
         while True:
             which_rectangle_calc = input("\nDid you want to calculate the area, the perimeter, or both for the rectangle? (a/p/b)").lower()
