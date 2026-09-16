@@ -12,5 +12,5 @@ def calc_area(width, height):
     return rectangle_area
 
 def calc_perimeter(width, height):
-    rectangle_perimeter = (2 * height) + (2 * width)
+    rectangle_perimeter = (2 * width) + (2 * height)
     return rectangle_perimeter
