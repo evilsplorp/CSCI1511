@@ -1,5 +1,5 @@
 """
-Playlist_Generator 1.4
+Playlist_Generator 1.5
 Raymond Black
 Creates a song playlist based on user input
 Resources: used examples from the readings and from the lecture on 2026-09-09 v1.0;
@@ -8,6 +8,7 @@ added a limit to the playlist (mostly so I could add a new if/else) v1.2;
 found a way to add numbers to the song list when it prints v1.3;
 added notations indicating what version added a feature v1.3
 correct playlist creation limit if statement v1.4
+updated creation limit, more music if statement with a while loop v1.5
 2026-09-11
 """
 
@@ -39,14 +40,21 @@ while getting_songs:
     print(f"Added: '{track} to your playlist.")
 
     # Ask for more songs; added a limit v1.2
-    # refactored, as the print statement would never print
+    # refactored, as the print statement would never print v1.4
     if len(playlist) < 5:
-        more_music = input("\nAdd more music? (yes/no): ").lower()
+        while True: # 
+            more_music = input("\nAdd more music? (yes/no): ").lower()
+            # Adding more music or not? anything other than yes, y, no, n gets rerun
+            # through the while loop v1.5
+            if more_music == 'yes' or more_music == 'y':
+                break
+            elif more_music == 'no' or more_music == 'n':
+                getting_songs = False
+                break
+            else:
+                print("Please enter yes or no.")
     else:
-        getting_songs = False
-
-    # Adding more music or not? anything other than yes or y is a no v1.0
-    if more_music != 'yes' and more_music != 'y':
+        print("\nThat's 5 songs!")
         getting_songs = False
 
 # display the playlist v1.0
