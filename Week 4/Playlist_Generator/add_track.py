@@ -9,6 +9,6 @@ def add_track(artist_input, song_title_input, playlist_list):
     
     track = f"{song_title} - {artist}"
     playlist_list.append(track)
-    print(f"Added: '{track} to your playlist.")
+    print(f"Added: '{track}' to your playlist.")
 
     return True
