@@ -9,11 +9,13 @@ found a way to add numbers to the song list when it prints v1.3;
 added notations indicating what version added a feature v1.3
 correct playlist creation limit if statement v1.4
 updated creation limit, more music if statement with a while loop v1.5
+extracted adding tracks to a function and put in separate file v1.6
 2026-09-11
 """
 
 # I wanted the ability to randomize the tracks when it printed them out v1.1. 
 import random
+from add_track import add_track
 
 # empty list for playlist items. I didn't use a dictionary to allow duplicate artists / songs v1.0
 playlist = []
@@ -28,19 +30,8 @@ while getting_songs:
     artist = input("\nEnter the artist name: ").strip()
     song_title = input("Enter the song title: ").strip()
 
-    # added a catch to force at least once entry. This let me drop the last
-    # if/else statement v1.2
-    if not artist or not song_title:
-        print("Please enter at least one artist and song title.")
+    if not add_track(artist, song_title, playlist):
         continue
-
-    # make it a single value to put in the list v1.0
-    track = f"{song_title} - {artist}"
-    playlist.append(track)
-    print(f"Added: '{track} to your playlist.")
-
-    # Ask for more songs; added a limit v1.2
-    # refactored, as the print statement would never print v1.4
     if len(playlist) < 5:
         while True: # 
             more_music = input("\nAdd more music? (yes/no): ").lower()
@@ -54,8 +45,45 @@ while getting_songs:
             else:
                 print("Please enter yes or no.")
     else:
-        print("\nThat's 5 songs!")
-        getting_songs = False
+            print("\nThat's 5 songs!")
+            getting_songs = False
+
+    # --------------------------------------------
+    # converted this to a function v1.6
+
+    # # added a catch to force at least once entry. This let me drop the last
+    # # if/else statement v1.2
+    # if not artist or not song_title:
+    #     print("Please enter at least one artist and song title.")
+    #     continue
+
+    # # make it a single value to put in the list v1.0
+    # track = f"{song_title} - {artist}"
+    # playlist.append(track)
+    # print(f"Added: '{track} to your playlist.")
+
+    # ---------------------------------------------
+
+    # Ask for more songs; added a limit v1.2
+    # refactored, as the print statement would never print v1.4
+    # moved inside while gettings_songs loop v 1.6
+
+    # if len(playlist) < 5:
+    #     while True: # 
+    #         more_music = input("\nAdd more music? (yes/no): ").lower()
+    #         # Adding more music or not? anything other than yes, y, no, n gets rerun
+    #         # through the while loop v1.5
+    #         if more_music == 'yes' or more_music == 'y':
+    #             break
+    #         elif more_music == 'no' or more_music == 'n':
+    #             getting_songs = False
+    #             break
+    #         else:
+    #             print("Please enter yes or no.")
+    # else:
+    #     print("\nThat's 5 songs!")
+    #     getting_songs = False
+
 
 # display the playlist v1.0
 
