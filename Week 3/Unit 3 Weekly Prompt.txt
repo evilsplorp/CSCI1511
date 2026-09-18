@@ -1,0 +1,15 @@
+Pick a S.O.L.I.D. design principle and explain the concept and how you can meet that principle when designing a program:
+
+The Single Responsibility Principle (SRP) asserts that a module should be responsible to only a single actor. In other words, it should not be overly complex and should generally only perform a single action.
+
+As an example, a single class could be written to accept data and store it in a database table / JSON file (or something else), then extract that data and perform actions or calculations on the data, then insert into another database table, then extract it and create a stylized report. This would violate SRP.
+
+Ideally, this should be separated out into multiple classes.
+
+Class 1: accept and store data in a database table / JSON file (or something else)
+Class 2: extract the data and do something with it (modifying it, performing calculations, etc.)
+Class 3: store the updated data in a new location, preserving the original information
+Class 4: extract data and display it in a stylized report
+Class 5: different report layouts based on the data
+
+Separating the classes out this way allows a change to be made that allows a new report layout without risking unwanted changes to the storage, modification/calculations, or displaying the report functions.
