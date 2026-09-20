@@ -2,7 +2,6 @@
 Playlist_Generator 1.7
 Raymond Black
 Creates a song playlist based on user input
-<<<<<<< HEAD
 Resources: used examples from the readings and from the lecture;
 Google searches & 'Python for Kids' book to determine how to make 
 some minor changes;
