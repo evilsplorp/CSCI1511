@@ -1,5 +1,10 @@
 def add_track(artist_input, song_title_input, playlist_list):
-    """adds track to the playlist"""
+    """
+    Playlist_Generator 1.7, add_track function
+    Raymond Black
+    Adds track to the playlist, requires at least one artist/song
+    Adds to a list rather than a dictionary to allow repeated artists or songs
+    """
     artist = artist_input
     song_title = song_title_input
 
