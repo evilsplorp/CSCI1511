@@ -14,26 +14,17 @@ class Coin:
 
     def __init__(self):
         """set default sides to Heads"""
-        self.__sideup = random.choice(['Heads', 'Tails'])
+        self.__sideup = "random.choice(['Heads', 'Tails'])"
         # initialize the attribute
 
     def toss(self):
         """Return and print a random number between 1 and the number of sides."""
-        result = random.randint(0, 1)
-        if result == 0:
-            self.side = "Heads"
+        self.__sideup = random.randint(0, 1)
+        if self.__sideup == 0:
+            self.__sideup = "Heads"
         else:
-            self.side = "Tails"
+            self.__sideup = "Tails"
 
     def get_sideup(self):
         return self.__sideup
-        
-        print(f"flip result: {self.__sideup}")
-        return self.__sideup
-
-# test code
-my_coin = Coin()
-print(my_coin.get_sideup())
-
-my_coin.toss()
-print(my_coin.get_sideup())
+        # Get the side that was returned
