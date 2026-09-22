@@ -1,0 +1,6 @@
+You should trap an exception only when your code knows how to recover from it. Essentially, you select the error message and tell the code what to do when it receives a particular error. 
+
+For example, when you’re asking for numbers and then dividing by zero, you might receive a ValueError (a string rather than an int or float was input) or a ZeroDivisionError (a zero entered as the divisor). Both would normally crash the program.
+
+If you want to catch ANY error, using ‘except Exception as err:’ will catch those errors that you don’t call out explicitly. 
+Having an exception for each of these error types (or the catch-all) with specific code to run for each one prevents showing tracebacks and gives the end user a better experience as the program should be prevented from crashing. You can either elect to stop the program with a user-friendly message, request additional information/input(s), or simply ignore the error message (use ‘pass’) and then resume the program.
