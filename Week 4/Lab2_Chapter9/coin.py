@@ -14,7 +14,7 @@ class Coin:
 
     def __init__(self):
         """set default sides to Heads"""
-        self.__sideup = "random.choice(['Heads', 'Tails'])"
+        self.__sideup = random.choice(['Heads', 'Tails'])
         # initialize the attribute
 
     def toss(self):
