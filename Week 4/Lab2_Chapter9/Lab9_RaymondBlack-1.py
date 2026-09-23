@@ -10,6 +10,7 @@ This is the application itself.
  """
 from player import Player
 
+
 def main():
     """
     Get player names for coin game. Toss coins, compare coins, determine
@@ -20,12 +21,33 @@ def main():
     while True:
 
         play = input("\nDo you want to toss a coin? (y/n) ").strip().lower()
+
         if play == "n":
             print("\nI guess you don't want to play.\n")
             break
+
         elif play == "y":
-            player1 = Player(input("Enter Player 1 name: "))
-            player2 = Player(input("Enter Player 2 name: "))
+
+            player1 = Player(input("We need names. First player? "))
+            print(f"{player1.get_name()}")
+            while player1.get_name() == "":
+                player1 = Player(input("Please enter a name, Player 1: "))
+                if player1.get_name() == "":
+                    continue
+                else:
+                    break
+
+            player2 = Player(input("Second player? "))
+            while player2.get_name() == "":
+                player2 = Player(input("Please enter a name, Player 2: "))
+                if player2.get_name() == "":
+                    continue
+                elif player2.get_name() == player1.get_name():
+                    player2 = Player(input("Sorry, that name is taken. Choose another? "))
+                    continue
+                else:
+                    break
+
             print(f"\nWelcome {player1.get_name()} and {player2.get_name()}! You both start with 20 coints.")
             while play == "y":
                 print("🪙 🪙 🪙   Let\'s toss those coins! 🪙 🪙 🪙\n")
