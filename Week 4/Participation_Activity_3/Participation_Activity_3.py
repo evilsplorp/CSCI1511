@@ -1,16 +1,19 @@
 """
-Geometry Calculator v1.3
+Geometry Calculator v1.3.PA3
 Raymond Black
 This application will calculate either the area and circumference of a circle
 or the area and perimeter of a rectangle.
 
 ***** Modified for Participation Activity 3 *****
+refactored selection process. 
+removed continue code in favor of calling a Class (calculator.py, Calculator)
 
 2026-09-24
 """
 
 from circle import calc_area as cca, calc_circumference as cc
 from rectangle import calc_area as rca, calc_perimeter as cp
+from calculator import Calculator
 # due to the replication of the calc_area function names,
 # aliases were used to differentiate the circle and rectangle calculations
 
@@ -28,8 +31,12 @@ def get_positive_number(question):
 
 print("---===Welcome to the Geometry Calculator===---\n")
 
-calculating = True
-while calculating:
+# calculating = True
+# while calculating:
+
+session = Calculator()
+while session.is_running:
+
     # changing to a menu-based option
     print("\n           Geometry Calculator")
     print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
@@ -73,21 +80,13 @@ while calculating:
             print(f"{square}The area is {result_area:.2f} and the perimeter is {result_perimeter:.2f}.")
 
     elif selection == "7":
-        calculating = False
+        # calculating = False
+        session.is_running = False
         break
     else:
         print("\nI think you mistyped. Please enter a number between 1 and 7.")
         continue
 
-    while True:
-        more = input("\nDo you want to enter another shape? (yes/no)").lower()
-        if more == 'yes' or more == 'y':
-            calculating = True
-            break
-        elif more == 'no' or more == 'n':
-            calculating = False
-            break
-        else:
-            print("\nSorry, I didn't get that. Was that a yes or no?")
+    session.ask_to_continue()
 
 print("\n-=-=-=-=-=-=-=Have a great day!=-=-=-=-=-=-=-=-\n")
