@@ -1,4 +1,3 @@
-
 import random
 
 class Coin:
@@ -26,5 +25,5 @@ class Coin:
             self.__sideup = "Tails"
 
     def get_sideup(self):
+        """Get the side of the coin that was returned"""
         return self.__sideup
-        # Get the side that was returned
