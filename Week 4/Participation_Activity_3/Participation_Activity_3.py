@@ -7,15 +7,13 @@ or the area and perimeter of a rectangle.
 ***** Modified for Participation Activity 3 *****
 refactored selection process. 
 removed continue code in favor of calling a Class (calculator.py, Calculator)
-
+updated code to utilize new class
 2026-09-24
 """
 
 from circle import calc_area as cca, calc_circumference as cc
 from rectangle import calc_area as rca, calc_perimeter as cp
 from calculator import Calculator
-# due to the replication of the calc_area function names,
-# aliases were used to differentiate the circle and rectangle calculations
 
 def get_positive_number(question):
     """validator function to eliminate repetition in the code"""
@@ -30,9 +28,6 @@ def get_positive_number(question):
             print("Please enter a positive number or positive decimal number.")
 
 print("---===Welcome to the Geometry Calculator===---\n")
-
-# calculating = True
-# while calculating:
 
 session = Calculator()
 while session.is_running:
