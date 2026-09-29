@@ -19,7 +19,7 @@ import string
 # needed for the other code I borrower
 from collections import Counter
 
-import WordAnalyzer
+from WordAnalyzer import WordAnalyzer
 
 # not sure I need this, but keeping for now
 import re
@@ -42,12 +42,12 @@ class CountMore:
             else:
                 print("\nSorry, I didn't get that. Was that a yes or no?")
 
-# random trouble with the path to the files not working
-cwd = Path.cwd()
-print(f"Path: {cwd}")
+base_dir = Path(r"C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\")
 
 session = CountMore()
-while session.is_running: 
+analyzer = WordAnalyzer()
+
+while session.is_running:
 
     # changing to a menu-based option
     print("\n           Select a book")
@@ -61,17 +61,9 @@ while session.is_running:
     #menu option inputs
     selection = input("\nEnter selection: ").strip()
 
-    filenames = ["C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\treasure_island.txt", 
-                 "C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\Tarzan.txt", 
-                 "C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\monte_cristo.txt", 
-                 "C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\treasure_island.txt"]
-    for filename in filenames:
-        path = Path(filename)
-        count_words(path)
-
     if selection == "1":
-       book = "C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\treasure_island.txt"
-       count_words(book)
+       book = base_dir / "princess_mars.txt"
+       analyzer.count_words(book)
 
     if selection == "2":
        book = "C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\Tarzan.txt"
@@ -88,6 +80,7 @@ while session.is_running:
     elif selection == "5":
         # calculating = False
         session.is_running = False
+        print("\nThanks! Have a great day!")
         break
     else:
         print("\nI think you mistyped. Please enter a number between 1 and 5.")

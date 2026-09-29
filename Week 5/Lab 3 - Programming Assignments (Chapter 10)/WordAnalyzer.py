@@ -20,9 +20,9 @@ class WordAnalyzer:
         """Count the approximate number of words in a file."""
         file_path = Path(filename)
         try:
-            contents = path.read_text(encoding='utf-8')
+            contents = file_path.read_text(encoding='utf-8')
         except FileNotFoundError:
-            print(f"Sorry, the file {path} does not exist.")
+            print(f"Sorry, the file {file_path} does not exist.")
             # to make it just ignore the failure, use pass
         else:
             # Count the approximate number of words in the file:
