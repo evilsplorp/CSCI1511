@@ -7,8 +7,6 @@ and display how many times each word appears.
 initial work used: 
 code from Participation Activity 3 as a base
 code from example in reading. had it saved locally.
-code from the internet: how to remove characters
-    that the maketrans wasn't catching
 more code from PA3 to ask to continue
 """
 
@@ -16,13 +14,11 @@ more code from PA3 to ask to continue
 from pathlib import Path
 import string
 
-# needed for the other code I borrower
+# needed for the other code I borrowed
 from collections import Counter
 
 from WordAnalyzer import WordAnalyzer
 
-# not sure I need this, but keeping for now
-import re
 
 class CountMore:
     """Do another book?"""
@@ -37,6 +33,7 @@ class CountMore:
                 self.is_running = True
                 return True
             elif more in ['no', 'n']:
+                print("\nThanks! Have a great day!\n")
                 self.is_running = False
                 return False
             else:
@@ -65,22 +62,21 @@ while session.is_running:
        book = base_dir / "princess_mars.txt"
        analyzer.count_words(book)
 
-    if selection == "2":
-       book = "C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\Tarzan.txt"
-       count_words(book)
+    elif selection == "2":
+       book = base_dir / "Tarzan.txt"
+       analyzer.count_words(book)
 
-    if selection == "3":
-       book = "C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\monte_cristo.txt"
-       count_words(book)
+    elif selection == "3":
+       book = base_dir / "monte_cristo.txt"
+       analyzer.count_words(book)
 
-    if selection == "4":
-       book = "C:\\Users\\raymo\\OneDrive\\Documents\\CSCC  -Columbus State Community College\\Python Programming (26AU W04L) CSCI-1511-W04L-01965-AU-2026\\python_work\\GitByBit\\Week 5\\Lab 3 - Programming Assignments (Chapter 10)\\treasure_island.txt"
-       count_words(book)
+    elif selection == "4":
+       book = base_dir / "treasure_island.txt"
+       analyzer.count_words(book)
 
     elif selection == "5":
-        # calculating = False
+        print("\nThanks! Have a great day!\n")
         session.is_running = False
-        print("\nThanks! Have a great day!")
         break
     else:
         print("\nI think you mistyped. Please enter a number between 1 and 5.")
