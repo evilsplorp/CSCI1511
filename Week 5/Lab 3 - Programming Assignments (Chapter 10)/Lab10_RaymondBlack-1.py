@@ -8,7 +8,7 @@ initial work used:
 code from Participation Activity 3 as a base
 code from example in reading. had it saved locally.
 code from the internet: how to remove characters
-that the maketrans wasn't catching
+    that the maketrans wasn't catching
 more code from PA3 to ask to continue
 """
 
@@ -18,6 +18,8 @@ import string
 
 # needed for the other code I borrower
 from collections import Counter
+
+import WordAnalyzer
 
 # not sure I need this, but keeping for now
 import re
@@ -39,34 +41,6 @@ class CountMore:
                 return False
             else:
                 print("\nSorry, I didn't get that. Was that a yes or no?")
-
-def count_words(filename):
-    """Count the approximate number of words in a file."""
-    try:
-        contents = path.read_text(encoding='utf-8')
-    except FileNotFoundError:
-        print(f"Sorry, the file {path} does not exist.")
-        # to make it just ignore the failure, use pass
-    else:
-        # Count the approximate number of words in the file:
-        
-        # ran into a problem when I tried to ignore punctuation. 
-        # this is my second runthrough, tested locally. the 
-        # curved double and single quotes weren't being removed,
-        # so I Googled how to exlude them and got this
-        extended_punctuation = string.punctuation + "“”‘’"
-
-        # replaces the normal, and the extra punctuation, with nothing
-        punct_table = str.maketrans("", "", extended_punctuation)
-
-        # handles the counting
-        cleaned_contents = contents.translate(punct_table).lower()
-        words = cleaned_contents.split()
-        word_counts = Counter(words)
-
-        # list all the words and their counts
-        for word in sorted(word_counts):
-            print(f"{word}: {word_counts[word]}")
 
 # random trouble with the path to the files not working
 cwd = Path.cwd()
