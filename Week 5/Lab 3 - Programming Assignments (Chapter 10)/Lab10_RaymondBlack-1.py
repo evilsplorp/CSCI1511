@@ -13,7 +13,6 @@ refactor to follow instructions
 2026-09-29
 """
 
-# required by instructions
 from pathlib import Path
 from WordAnalyzer import WordAnalyzer
 
@@ -29,13 +28,22 @@ def main():
 
     while True:
 
-        # menu
-        print("\n           Select a book")
+        print("\n                 Select a book")
         print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
 
         for key, filepath in files_menu.items():
 
             clean_name = filepath.stem.replace('_', ' ').title()
+            # if statements to provide correct names of the books
+            if clean_name == "Princess Mars":
+                clean_name = "A Princess of Mars"
+            elif clean_name == "Tarzan":
+                clean_name = "Tarzan of the Apes"
+            elif clean_name == "Monte Cristo":
+                clean_name = "The Count of Monte Cristo"                
+            else:
+                clean_name = clean_name
+
             print(f"{key}. {clean_name}")
         print("5. Exit")
         selection = input("\nEnter selection: ").strip()
