@@ -10,13 +10,20 @@ code from example in reading. had it saved locally.
 more code from PA3 to ask to continue
 
 refactor to follow instructions
-2026-09-29
+2026-09-30
 """
 
 from pathlib import Path
 from WordAnalyzer import WordAnalyzer
 
 def main():
+    '''
+    Runs the main menu for the application
+    Gives a list of books (with an exit option) from
+    which the user can select,
+    Analyzation is handled by the WordAnalzer class.
+    Input validation is handled here as well.
+    '''
     base_dir = Path(__file__).parent
 
     files_menu = {
@@ -45,6 +52,7 @@ def main():
                 clean_name = clean_name
 
             print(f"{key}. {clean_name}")
+        print 
         print("5. Exit")
         selection = input("\nEnter selection: ").strip()
 
