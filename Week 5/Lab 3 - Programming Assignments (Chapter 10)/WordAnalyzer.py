@@ -43,8 +43,15 @@ class WordAnalyzer:
                     if not begin_count:
                         if contents.startswith("*** START OF THE PROJECT GUTENBERG EBOOK"):
                             begin_count = True
-                        continue  
+                        continue
+                    # also saw this in the list. added a catch to stop when the book ends.
+                    if contents.startswith("*** END OF THE PROJECT GUTENBERG EBOOK"):
+                        break
+
                     contents = contents.replace('—', ' - ')
+                    # happened to catch another weird thing in Treasure Island
+                    # I added the below to separate words that were combined with a double --
+                    contents = contents.replace('--', ' - ')
                     contents = contents.replace('“', '"')
                     contents = contents.replace('”', '"')
                     contents = contents.replace('‘', "'")
