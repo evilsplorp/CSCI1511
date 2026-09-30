@@ -111,6 +111,15 @@ class WordAnalyzer:
         alphabetical list with a count for each word
         '''
         sorted_content = sorted(self.__frequency.keys())
+        line_count = 0
 
         for word in sorted_content:
             print(f"{word} :: {self.__frequency[word]}")
+            line_count += 1
+
+            if line_count == 1000:
+                keep_displaying = input("\nWow, that's a lot of words. Let's take a break.\n OK, hit ENTER to continue or type q to stop.\n").strip().lower()
+                if keep_displaying == 'q':
+                    print("\n Back to the main menu")
+                    break
+                line_count = 0
