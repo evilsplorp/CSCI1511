@@ -12,29 +12,43 @@ location in the file (they all have boilerplate before
 the real content starts).
 
 refactor to follow instructions.
-2026-09-29
+2026-09-30
 """
 
 from pathlib import Path
 import string
 
 class WordAnalyzer:
+    '''
+    optionally filters out specific words
+    removes punctuation
+    provides a count for each word in the selected document
+    '''
     def __init__(self, filepath):
         """
-        main function in class
+        provides an initial file path
+        empty frequency dictionary 
         """
         self.__filepath = Path(filepath)
         self.__frequency = {}
 
     def process_file(self):
         """
-        process_file(self): This method will contain the main logic.
+        reads and reviews selected document
+        asks user if they want any words to be ignored
+        cleans punctuation
+        changes text to lowercase
+        counts frequency of each unique word
         """
         try:
             if not self.__filepath.exists():
                 raise FileNotFoundError
+
+            clean_punctuation = string.punctuation.replace("'", "")
             
-            punct_table = str.maketrans('', '', string.punctuation)
+            punct_table = str.maketrans('', '', clean_punctuation)
+
+            discard_list = self.ignore_words()
 
             begin_count = False
 
@@ -64,7 +78,8 @@ class WordAnalyzer:
                     words = fixed_contents.split()
 
                     for word in words:
-                        if word: 
+                        # handling the discard list
+                        if word and word not in discard_list: 
                             if word in self.__frequency: 
                                 self.__frequency[word] += 1
                             else:
@@ -76,7 +91,25 @@ class WordAnalyzer:
             print(f"Sorry, the file {self.__filepath} does not exist.")
             return False
 
+    def ignore_words(self):
+        """
+        asks user for optional words to ignore
+        enter with no content ends the loop
+        returns the list of words to be ignored
+        """
+        ignore = []
+        while True:
+            denied = input("\nDo you want to skip any words? Type a word or press Enter to finish: ").strip()
+            if not denied:
+                break
+            ignore.append(denied)
+        return ignore
+
     def print_report(self):
+        '''
+        prints the results for the selected book
+        alphabetical list with a count for each word
+        '''
         sorted_content = sorted(self.__frequency.keys())
 
         for word in sorted_content:
