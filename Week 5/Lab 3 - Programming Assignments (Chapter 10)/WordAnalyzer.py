@@ -17,6 +17,8 @@ refactor to follow instructions.
 
 from pathlib import Path
 import string
+
+# remove this
 from collections import Counter
 
 # __init__(self, filepath): The initializer should take the filepath 
@@ -25,11 +27,16 @@ from collections import Counter
 # to hold the word frequencies.
 class WordAnalyzer:
     def __init__(self, filepath):
+        """
+        main function in class
+        """
         self.__filepath = Path(filepath)
         self.__frequency = {}
 
-#process_file(self): This method will contain the main logic. It must:
     def process_file(self):
+        """
+        process_file(self): This method will contain the main logic.
+        """
         # Use a try-except block to handle FileNotFoundError gracefully.
         # Use the pathlib.Path object's .exists() method to check for the file.
         try:
@@ -48,7 +55,7 @@ class WordAnalyzer:
                 for contents in file:
                     # Check for the Project Gutenberg boilterplate
                     if not begin_count:
-                        if line.startswith("*** START OF THE PROJECT GUTENBERG EBOOK"):
+                        if contents.startswith("*** START OF THE PROJECT GUTENBERG EBOOK"):
                             begin_count = True
                         continue  # Skip lines until the marker is passed
                     # updated character replacement stuff
@@ -62,7 +69,7 @@ class WordAnalyzer:
 
                     fixed_contents = fixed_contents.lower()
 
-                    words = cleaned_contents.split()
+                    words = fixed_contents.split()
 
                     # using the new stuff from above
                     for word in words:
@@ -70,13 +77,14 @@ class WordAnalyzer:
                             if word in self.__frequency: # if it's already recorded, increase the value
                                 self.__frequency[word] += 1
                             else:
-                                self.__frequency = 1 # if it doesn't exist, start it with a 1
+                                self.__frequency[word] = 1 # if it doesn't exist, start it with a 1
 
             return True # Done!
 
         # handling the error and updated variable call in the print statement
         except FileNotFoundError:
             print(f"Sorry, the file {self.__filepath} does not exist.")
+            return False
 
 
 # original version
@@ -128,7 +136,8 @@ class WordAnalyzer:
         sorted_content = sorted(self.__frequency.keys())
 
         # Print the word and its count in the specified format
-        print(f"{word} :: {self.__frequency[word]}")
+        for word in sorted_content:
+            print(f"{word} :: {self.__frequency[word]}")
 
 
 # old version
