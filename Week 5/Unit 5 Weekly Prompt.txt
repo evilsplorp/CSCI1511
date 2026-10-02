@@ -1,0 +1,16 @@
+Double buffering is a method used to allow cleaner graphics during games 
+(or, really, in anything that uses graphics). A buffer is a block of memory, 
+so effectively, a double buffer is two blocks of memory used for graphics. 
+In a very basic example, the first buffer would be the original location of 
+something on the screen and the second buffer would be the new location. The 
+second buffer is invisible to the end user until needed. Flipping between the 
+first and the second buffer gives the appearance of movement.
+
+The pygame.display.flip() method tells Pygame to make that flip. Essentially, 
+these are two pieces of the same puzzle. The buffer is where the data is stored, 
+the display.flip tells the program when to make the change from one to another. 
+When multiple buffers are used together, one after another, visual changes onscreen 
+can appear smoothly, without the appearance of jitter, flickering, or pixelization. 
+This is, of course, dependent on the end user’s computer (CPU, RAM, video card, 
+harddrive, and monitor). Smooth graphics can be accomplished using minimal 
+specifications, but modern technology has made the entire process a lot easier.
