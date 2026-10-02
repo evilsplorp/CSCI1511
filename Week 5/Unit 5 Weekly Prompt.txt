@@ -13,4 +13,4 @@ When multiple buffers are used together, one after another, visual changes onscr
 can appear smoothly, without the appearance of jitter, flickering, or pixelization. 
 This is, of course, dependent on the end user’s computer (CPU, RAM, video card, 
 harddrive, and monitor). Smooth graphics can be accomplished using minimal 
-specifications, but modern technology has made the entire process a lot easier.
+specifications, but modern technology has made the entire process a lot easier. 
