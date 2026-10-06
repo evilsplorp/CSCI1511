@@ -94,7 +94,8 @@ def search_by_album(db, query):
 
     for album in matches:
 
-        # grabs the unique album ID and title, then finds all songs that belong to that album by matching the album ID.
+        # grabs the unique album ID and title, then finds all songs that 
+        # belong to that album by matching the album ID.
         album_id = album.get("-id")
         album_title = album.get("Title")
         album_songs = [
@@ -108,6 +109,40 @@ def search_by_album(db, query):
         print(f"Artist:      {album.get('AlbumArtist')}")
         print(f"Songs:  {', '.join(album_songs) if album_songs else 'No tracks found'}")
 
+def search_by_artist(db, query):
+    """
+    Searches for artists in the database by name.
+    """
+
+    # this looks at the JSON file for the Artists.Artist information,
+    # Albums.Album information, and Songs.Song information.
+    artists = db.get("Artists", {}).get("Artist", [])
+    albums = db.get("Albums", {}).get("Album", [])
+    songs = db.get("Songs", {}).get("Song", [])
+
+    # loops through all the artists looking for a match to the text the user entered.
+    matches = [a for a in artists if query in a.get("Name", "").lower()]
+
+    # no match, print a message and return
+    if not matches:
+        print(f"\nNo artists found containing '{query}'.")
+        return
+
+    # prints how many matches were found
+    print(f"\nFound {len(matches)} matching artist(s):")
+
+    for artist in matches:
+        # grabs the artist name, then finds all albums and songs that 
+        # belong to that artist by matching the artist name.
+        artist_name = artist.get("Name")
+        artist_albums = [a.get("Title") for a in albums if a.get("AlbumArtist") == artist_name]
+        artist_songs = [s.get("Title") for s in songs if s.get("Artist") == artist_name]
+        clean_titles = [a if isinstance(a, str) else str(a) for a in artist_albums]
+        print("")  # Spacing line
+        # prints the artist, album, and song information
+        print(f"- Artist Name: {artist.get('Name')}")
+        print(f"Albums:      {', '.join(clean_titles) if clean_titles else 'None'}")
+        print(f"Songs:       {', '.join(artist_songs) if artist_songs else 'None'}")
 
 def main():
     """
