@@ -1,5 +1,5 @@
 """
-Music Collection Manager 3.9
+Music Collection Manager 4.1
 Raymond Black
 A searchable JSON file of artists, albums, and songs; 
 1.0 gets the JSON file and checks for errors. 
@@ -22,10 +22,16 @@ It only supports searching by song title.
     To Do: add support for just hitting enter to find albums with no title. - DONE
     To Do: there's an issue with "various artists" albums not showing all the tracks for that album.
 3.8 Fixed issue with hitting enter to find albums with no title.
-    To Do: a single space still shows all albums.
+    To Do: a single space still shows all albums. - DONE
 3.9 Fixed issue with a single space showing all albums. Now it only shows albums with no title.
-    To Do: correct search for albums (to start) so that searches are exact word matches 
+    To Do: correct search for albums (to start) so that searches are exact word matches - DONE
            ("an" returns only albums with "an" in the title, not "and" or "another", but not JUST the word "an").
+4.0 Fixed issue with album search so that searches are exact word matches.
+    Fixed issue with song search so that searches are exact word matches.
+    Note: Not applying this to artists, as I want Tom to bring up Tom and Tommmy, for example.
+    BUGFIX: multiple artists on a track are not showing in results, but are being counted separately. - DONE
+    Addressed display formatting when multiple songs are displayed.
+    To Do: Sort song search by Song Title
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -63,8 +69,42 @@ def search_by_song(db, query):
     # this looks at the JSON file for the Songs.Song information.
     songs = db.get("Songs", {}).get("Song", [])
 
+    clean_query = query.strip().lower()
+    is_query_blank = query == "" or query.isspace()
+
     # loops through all the songs looking for a match to the text the user entered.
-    matches = [s for s in songs if query in s.get("Title", "").lower()]
+    # matches = [s for s in songs if query in s.get("Title", "").lower()]
+
+    matches = []
+    for s in songs:
+        title_value = s.get("Title", "")
+        is_blank_title = not title_value or title_value == {}
+
+        if is_blank_title and (clean_query in ["none", "blank", "no song title"] or is_query_blank):
+            matches.append(s)
+
+        elif not is_blank_title:
+            if not is_query_blank:
+                title_str = title_value if isinstance(title_value, str) else str(title_value)
+                song_title_words = title_str.lower()
+
+                # need to fix issue with partial matches, so that "an" 
+                # doesn't match "and" or "another", but does match "an".
+
+                # Visual Studio Code auto-generated the punctation list below
+                for punctuation in [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]:
+                    song_title_words = song_title_words.replace(punctuation, " ")
+
+                song_words = song_title_words.split()
+                query_words = clean_query.split()
+
+                all_words_match = True
+                for word in query_words:
+                    if word not in song_words:
+                        all_words_match = False
+                        break
+                if all_words_match:
+                    matches.append(s)
 
     # no match, print a message and return
     if not matches:
@@ -88,33 +128,23 @@ def search_by_song(db, query):
         else:
             fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
 
+        raw_song_title = song.get('Title', "")
+        clean_song_title = "No Song Name" if not raw_song_title or raw_song_title == {} else raw_song_title
+
         # prints the song information
         print("") # Spacing line
-        print(f"- Song Title: {song.get('Title')}")
+        print(f"- Song Title: {clean_song_title}")
         print(f"Artist: {song.get('Artist')}")
         print(f"Album: {album_name}",)
         print(f"Track Number: {fixed_order}")
 
 def search_by_album(db, query):
     """
-    Searches for albums in the database by title.
+    Searches for albums in the database by title. 
     """
-
-    # this looks at the JSON file for the Songs.Song information and Albums.Album information.
 
     albums = db.get("Albums", {}).get("Album", [])
     songs = db.get("Songs", {}).get("Song", [])
-
-    # loops through all the albums looking for a match to the text the user entered.
-    # matches = [
-    #     a for a in albums 
-    #     if query.lower() in (
-    #         a.get("Title", "") if isinstance(a.get("Title"), str) 
-    #         else str(a.get("Title", ""))
-    #     ).lower()
-    # ]
-
-    # trying to correctly handle albums with no title, so that they can be searched for by the user.
 
     matches = []
     for a in albums:
@@ -122,48 +152,54 @@ def search_by_album(db, query):
         is_blank_title = not title_value or title_value == {}
 
         clean_query = query.strip().lower()
-
         is_query_blank = query == "" or query.isspace()
 
-        if is_blank_title and (clean_query in ["none", "blank", "no album name", ""] or is_query_blank):
+        if is_blank_title and (clean_query in ["none", "blank", "no album name"] or is_query_blank):
             matches.append(a)
-            # fixed the issue with searching for albums with no title, 
-            # but it now displays ALL albums, not just the ones with no title when using a single space.
+
         elif not is_blank_title:
             if not is_query_blank:
-
-            # if query.strip() != "":
                 title_str = title_value if isinstance(title_value, str) else str(title_value)
-                if clean_query in title_str.lower():
+                album_title_words = title_str.lower()
 
-                # if query.lower() in title_str.lower():
+                # need to fix issue with partial matches, so that "an" 
+                # doesn't match "and" or "another", but does match "an".
+
+                # Visual Studio Code auto-generated the punctation list below
+                for punctuation in [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]:
+                    album_title_words = album_title_words.replace(punctuation, " ")
+
+                album_words = album_title_words.split()
+                query_words = clean_query.split()
+
+                all_words_match = True
+                for word in query_words:
+                    if word not in album_words:
+                        all_words_match = False
+                        break
+                if all_words_match:
                     matches.append(a)
 
-    # no match, print a message and return
+                # if clean_query in title_str.lower():
+                #     matches.append(a)
+
     if not matches:
         print(f"\nNo albums found containing '{query}'.")
         return
     
-    # prints how many matches were found
     print(f"\nFound {len(matches)} matching album(s):")
 
     for album in matches:
 
-        # grabs the unique album ID and title, then finds all songs that 
-        # belong to that album by matching the album ID.
         album_id = album.get("-id")
-
-        # trying to refactor to handle various artists on an album
         album_artist = album.get("AlbumArtist", "")
 
-        # needed to modify this as part of the blank album title support
         basic_title = album.get("Title", "")
         if not basic_title or basic_title == {}:
             album_title = "" # blank album title
         else:
             album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
-        # similar code as that under the artist selection
         song_info = []
         for s in songs:
             song_album = s.get("Album")
@@ -174,7 +210,6 @@ def search_by_album(db, query):
                 else:
                     fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
 
-                # grab the artist for each track for "various artists" albums
                 track_artist = s.get("Artist", "Unknown Artist")
                 if isinstance(track_artist, dict):
                     track_artist = track_artist.get("#text", "Unknown Artist")
@@ -182,92 +217,116 @@ def search_by_album(db, query):
                 song_info.append({
                     "order": fixed_order,
                     "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", "")),
-                    # save the artist for each track for "various artists" albums
                     "artist": str(track_artist)
                 })
 
-        # startwith "Various Artists - " to get the albums with various artists
         is_various = isinstance(album_artist, str) and album_artist.startswith("Various Artists - ")
-
-        # this was causing the duplication of the track list when displaying albums with various artists.
-        # it now shows the track list only once, with the artist for each track.
-        # album_songs = [f"{s['order']}. {s['title']}" for s in song_info]
 
         album_songs = []
 
         for s in song_info:
             if is_various:
-                album_songs.append(f"{s['order']}. {s['title']} by {s['artist']}")
+                album_songs.append(f"{s['order']}. {s['title']} by {s['artist']}\n")
             else:
-                album_songs.append(f"{s['order']}. {s['title']}")
+                album_songs.append(f"{s['order']}. {s['title']}\n")
 
-        tracks_display = ', '.join(album_songs) if album_songs else 'No tracks found'
+        tracks_display = ''.join(album_songs) if album_songs else 'No tracks found'
 
-        # prints the album information
         print("")  # Spacing line
         print(f"- Album Title: {album_title}")
         print(f"Artist: {album.get('AlbumArtist')}")
-        print(f"Songs: {tracks_display}")
+        print(f"Songs:\n{tracks_display}")
 
 def search_by_artist(db, query):
     """
     Searches for artists in the database by name.
     """
 
-    # this looks at the JSON file for the Artists.Artist information,
-    # Albums.Album information, and Songs.Song information.
     artists = db.get("Artists", {}).get("Artist", [])
     albums = db.get("Albums", {}).get("Album", [])
     songs = db.get("Songs", {}).get("Song", [])
 
-    # loops through all the artists looking for a match to the text the user entered.
     matches = [a for a in artists if query in a.get("Name", "").lower()]
 
-    # no match, print a message and return
     if not matches:
         print(f"\nNo artists found containing '{query}'.")
         return
 
-    # prints how many matches were found
     print(f"\nFound {len(matches)} matching artist(s):")
 
     for artist in matches:
-        # grabs the artist name, then finds all albums and songs that 
-        # belong to that artist by matching the artist name.
+
         artist_name = artist.get("Name")
 
-        # grab the full Album info to grab the album ID for matching songs
-        matching_albums = [a for a in albums if a.get("AlbumArtist") == artist_name]
+        # need to collect albums that have multiple artists and 
+        # find ones with multiple artists on a single track
 
-        # artist_albums = [a.get("Title") for a in albums if a.get("AlbumArtist") == artist_name]
+        # need an empty list
+        multiple_artist_albums = []
+        for s in songs:
+            song_artist = s.get("Artist", "")
 
-        # I wanted to add track numbers to the song list 
-        # also wanted to make sure that the songs were correctly
-        # associated with the album
+            # check the artist field and split on ; and strip trailing spaces
+            artists_list = [name.strip() for name in str(song_artist).split(";")] if song_artist else []
+
+            # check for matching artists in the search and connect it to the album
+
+            if artist_name in artists_list and isinstance(s.get("Album"), dict):
+                compiled_id = s["Album"].get("-id")
+                if compiled_id and compiled_id not in multiple_artist_albums:
+                    multiple_artist_albums.append(compiled_id)
+
+        # matching_albums = [a for a in albums if a.get("AlbumArtist") == artist_name]
+
+        # need an empty list
+        matching_albums = []
+
+        for a in albums:
+            is_main_artist = a.get("AlbumArtist") == artist_name
+            is_compiliation_appeareance = a.get("-id") in multiple_artist_albums
+
+            if is_main_artist or is_compiliation_appeareance:
+                matching_albums.append(a)
+
+        print("")  # Spacing line for artist header
+        print(f"- Artist Name: {artist_name}")
+
+        if not matching_albums:
+            print("Albums: none")
+            continue
+
 
         for album in matching_albums:
-            # grab the ID of the album to match with songs
             album_id = album.get("-id")
 
             basic_title = album.get("Title", "")
-            # some albums have no title, so we need a default value
             if not basic_title or basic_title == {}:
-                album_title = "" # blank album title
+                album_title = "" 
             else: 
                 album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
             song_info = []
             for s in songs:
                 song_album = s.get("Album")
-                
-                # Make sure the Album is a dictionary AND actually has a valid, matching -id
+                song_artist = s.get("Artist", "")
+
+                # split the track artists to get ones with multiple artists
+
+                track_artists = [name.strip() for name in str(song_artist).split(";")] if song_artist else []
+
+                # if the artist name shows up in the above and there's a matchiing song on the album...
                 if (
-                    s.get("Artist") == artist_name 
-                    and isinstance(song_album, dict) 
+                    artist_name in track_artists
+                    and isinstance(song_album, dict)
                     and song_album.get("-id") == album_id
                 ):
 
-                    # If there's no Order value, it now displays 00
+                # replaced with above
+                # if (
+                #     s.get("Artist") == artist_name 
+                #     and isinstance(song_album, dict) 
+                #     and song_album.get("-id") == album_id
+                # ):
 
                     initial_order = s.get("Order", "0")
                     if not initial_order or initial_order == {}:
@@ -280,14 +339,13 @@ def search_by_artist(db, query):
                         "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
                     })
 
-            artist_songs = [f"{s['order']}. {s['title']}" for s in song_info]
+            artist_songs = [f"{s['order']}. {s['title']}\n" for s in song_info]
 
-            tracks_display = ', '.join(artist_songs) if artist_songs else 'No tracks found'
+            tracks_display = ''.join(artist_songs) if artist_songs else 'No tracks found'
             print("")  # Spacing line
-            # prints the artist, album, and song information
-            print(f"- Artist Name: {artist.get('Name')}")
+            # print(f"- Artist Name: {artist.get('Name')}")
             print(f"Album: {album_title}")
-            print(f"Songs: {tracks_display}")
+            print(f"Songs:\n{tracks_display}")
 
 def main():
     """
