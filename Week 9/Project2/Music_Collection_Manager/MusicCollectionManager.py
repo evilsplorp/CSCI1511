@@ -1,5 +1,5 @@
 """
-Music Collection Manager 3.8
+Music Collection Manager 3.9
 Raymond Black
 A searchable JSON file of artists, albums, and songs; 
 1.0 gets the JSON file and checks for errors. 
@@ -23,6 +23,9 @@ It only supports searching by song title.
     To Do: there's an issue with "various artists" albums not showing all the tracks for that album.
 3.8 Fixed issue with hitting enter to find albums with no title.
     To Do: a single space still shows all albums.
+3.9 Fixed issue with a single space showing all albums. Now it only shows albums with no title.
+    To Do: correct search for albums (to start) so that searches are exact word matches 
+           ("an" returns only albums with "an" in the title, not "and" or "another", but not JUST the word "an").
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -117,14 +120,23 @@ def search_by_album(db, query):
     for a in albums:
         title_value = a.get("Title", "")
         is_blank_title = not title_value or title_value == {}
-        if is_blank_title and query.strip() in ["none", "blank", "no album name", ""]:
+
+        clean_query = query.strip().lower()
+
+        is_query_blank = query == "" or query.isspace()
+
+        if is_blank_title and (clean_query in ["none", "blank", "no album name", ""] or is_query_blank):
             matches.append(a)
             # fixed the issue with searching for albums with no title, 
             # but it now displays ALL albums, not just the ones with no title when using a single space.
         elif not is_blank_title:
-            if query.strip() != "":
+            if not is_query_blank:
+
+            # if query.strip() != "":
                 title_str = title_value if isinstance(title_value, str) else str(title_value)
-                if query.lower() in title_str.lower():
+                if clean_query in title_str.lower():
+
+                # if query.lower() in title_str.lower():
                     matches.append(a)
 
     # no match, print a message and return
@@ -151,7 +163,6 @@ def search_by_album(db, query):
         else:
             album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
-
         # similar code as that under the artist selection
         song_info = []
         for s in songs:
@@ -168,7 +179,6 @@ def search_by_album(db, query):
                 if isinstance(track_artist, dict):
                     track_artist = track_artist.get("#text", "Unknown Artist")
 
-
                 song_info.append({
                     "order": fixed_order,
                     "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", "")),
@@ -178,7 +188,6 @@ def search_by_album(db, query):
 
         # startwith "Various Artists - " to get the albums with various artists
         is_various = isinstance(album_artist, str) and album_artist.startswith("Various Artists - ")
-
 
         # this was causing the duplication of the track list when displaying albums with various artists.
         # it now shows the track list only once, with the artist for each track.
@@ -199,7 +208,6 @@ def search_by_album(db, query):
         print(f"- Album Title: {album_title}")
         print(f"Artist: {album.get('AlbumArtist')}")
         print(f"Songs: {tracks_display}")
-
 
 def search_by_artist(db, query):
     """
@@ -311,7 +319,7 @@ def main():
 
         # sub-menu
         elif menu_option == '1':
-            sub_menu = input("\n1. Song, 2. Album (type 'none' for unassociated songs), 3. Artist\nSelect category: ").strip()
+            sub_menu = input("\n1. Song, 2. Album (type 'none' for songs not on an album), 3. Artist\nSelect category: ").strip()
             q = input("Enter query: ").strip().lower()
             if q and sub_menu == '1':
                 search_by_song(db, q)
