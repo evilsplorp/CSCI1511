@@ -8,6 +8,7 @@ It only supports searching by song title.
 3.0 added searching by artist name and shows the albums and songs for that artist.
 3.1 added track numbers to the song list for each artist.
 3.2 added error handling for missing album names.
+3.3 added error handling for missing track numbers.
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -170,25 +171,20 @@ def search_by_artist(db, query):
                     and song_album.get("-id") == album_id
                 ):
 
-                    # something broken about here. If there's no Order, it displays {}                    
+                    # If there's no Order value, it now displays 00
+
+                    initial_order = s.get("Order", "0")
+                    if not initial_order or initial_order == {}:
+                        fixed_order = "00"
+                    else:
+                        fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
+
                     song_info.append({
-                        "order": s.get("Order", "0"),
+                        "order": fixed_order,
                         "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
                     })
 
-
-        # song_info = [
-        #     {
-        #         # order is the track number, title is the song title
-        #         "order": s.get("Order", "0"),
-        #         "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
-        #     }
-        #     for s in songs if s.get("Artist") == artist_name
-        # ]
-
             artist_songs = [f"{s['order']}. {s['title']}" for s in song_info]
-
-            # artist_songs = [s.get("Title") for s in songs if s.get("Artist") == artist_name]
 
             tracks_display = ', '.join(artist_songs) if artist_songs else 'No tracks found'
             print("")  # Spacing line
