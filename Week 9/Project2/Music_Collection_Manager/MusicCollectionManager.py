@@ -7,6 +7,7 @@ It only supports searching by song title.
 2.0 adds searching by album title and shows the songs on that album.
 3.0 added searching by artist name and shows the albums and songs for that artist.
 3.1 added track numbers to the song list for each artist.
+3.2 added error handling for missing album names.
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -137,29 +138,64 @@ def search_by_artist(db, query):
         # grabs the artist name, then finds all albums and songs that 
         # belong to that artist by matching the artist name.
         artist_name = artist.get("Name")
-        artist_albums = [a.get("Title") for a in albums if a.get("AlbumArtist") == artist_name]
+
+        # grab the full Album info to grab the album ID for matching songs
+        matching_albums = [a for a in albums if a.get("AlbumArtist") == artist_name]
+
+        # artist_albums = [a.get("Title") for a in albums if a.get("AlbumArtist") == artist_name]
 
         # I wanted to add track numbers to the song list 
+        # also wanted to make sure that the songs were correctly
+        # associated with the album
 
-        song_info = [
-            {
-                # order is the track number, title is the song title
-                "order": s.get("Order", "0"),
-                "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
-            }
-            for s in songs if s.get("Artist") == artist_name
-        ]
+        for album in matching_albums:
+            # grab the ID of the album to match with songs
+            album_id = album.get("-id")
 
-        artist_songs = [f"{s['order']}. {s['title']}" for s in song_info]
+            basic_title = album.get("Title", "")
+            # some albums have no title, so we need a default value
+            if not basic_title or basic_title == {}:
+                album_title = "No Album Name"
+            else: 
+                album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
-        # artist_songs = [s.get("Title") for s in songs if s.get("Artist") == artist_name]
+            song_info = []
+            for s in songs:
+                song_album = s.get("Album")
+                
+                # Make sure the Album is a dictionary AND actually has a valid, matching -id
+                if (
+                    s.get("Artist") == artist_name 
+                    and isinstance(song_album, dict) 
+                    and song_album.get("-id") == album_id
+                ):
 
-        clean_titles = [a if isinstance(a, str) else str(a) for a in artist_albums]
-        print("")  # Spacing line
-        # prints the artist, album, and song information
-        print(f"- Artist Name: {artist.get('Name')}")
-        print(f"Albums:      {', '.join(clean_titles) if clean_titles else 'None'}")
-        print(f"Songs:       {', '.join(artist_songs) if artist_songs else 'None'}")
+                    # something broken about here. If there's no Order, it displays {}                    
+                    song_info.append({
+                        "order": s.get("Order", "0"),
+                        "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
+                    })
+
+
+        # song_info = [
+        #     {
+        #         # order is the track number, title is the song title
+        #         "order": s.get("Order", "0"),
+        #         "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
+        #     }
+        #     for s in songs if s.get("Artist") == artist_name
+        # ]
+
+            artist_songs = [f"{s['order']}. {s['title']}" for s in song_info]
+
+            # artist_songs = [s.get("Title") for s in songs if s.get("Artist") == artist_name]
+
+            tracks_display = ', '.join(artist_songs) if artist_songs else 'No tracks found'
+            print("")  # Spacing line
+            # prints the artist, album, and song information
+            print(f"- Artist Name: {artist.get('Name')}")
+            print(f"Albums:      {album_title}")
+            print(f"Songs:       {tracks_display}")
 
 def main():
     """
