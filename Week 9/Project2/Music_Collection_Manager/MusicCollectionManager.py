@@ -13,6 +13,9 @@ It only supports searching by song title.
 3.5 added temp fix for missing album names in the sub-menu. 
     added track numbers to the album search results (with error handling for missing track numbers).
     To Do: address issue with various artists being on the same album. Search for Bill & Ted for example
+3.6 added support for various artists on an album. It now shows the artist for each track on the album.
+    To Do: There's an issue with duplication of the track list when displaying albums with various artists. 
+           It shows the track list twice, once with the artist and once without. Need to fix that.
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -115,6 +118,9 @@ def search_by_album(db, query):
         # belong to that album by matching the album ID.
         album_id = album.get("-id")
 
+        # trying to refactor to handle various artists on an album
+        album_artist = album.get("AlbumArtist", "")
+
         # needed to modify this as part of the blank album title support
         basic_title = album.get("Title", "")
         if not basic_title or basic_title == {}:
@@ -122,7 +128,6 @@ def search_by_album(db, query):
         else:
             album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
-        # album_title = album.get("Title")
 
         # similar code as that under the artist selection
         song_info = []
@@ -135,12 +140,29 @@ def search_by_album(db, query):
                 else:
                     fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
 
+                # grab the artist for each track for "various artists" albums
+                track_artist = s.get("Artist", "Unknown Artist")
+                if isinstance(track_artist, dict):
+                    track_artist = track_artist.get("#text", "Unknown Artist")
+
+
                 song_info.append({
                     "order": fixed_order,
-                    "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
+                    "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", "")),
+                    # save the artist for each track for "various artists" albums
+                    "artist": str(track_artist)
                 })
 
+        # startwith "Various Artists - " to get the albums with various artists
+        is_various = isinstance(album_artist, str) and album_artist.startswith("Various Artists - ")
+
         album_songs = [f"{s['order']}. {s['title']}" for s in song_info]
+
+        for s in song_info:
+            if is_various:
+                album_songs.append(f"{s['order']}. {s['title']} by {s['artist']}")
+            else:
+                album_songs.append(f"{s['order']}. {s['title']}")
 
         tracks_display = ', '.join(album_songs) if album_songs else 'No tracks found'
 
