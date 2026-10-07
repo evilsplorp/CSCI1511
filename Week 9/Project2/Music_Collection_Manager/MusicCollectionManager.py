@@ -1,5 +1,5 @@
 """
-Music Collection Manager 3.1
+Music Collection Manager 3.5
 Raymond Black
 A searchable JSON file of artists, albums, and songs; 
 1.0 gets the JSON file and checks for errors. 
@@ -9,6 +9,10 @@ It only supports searching by song title.
 3.1 added track numbers to the song list for each artist.
 3.2 added error handling for missing album names.
 3.3 added error handling for missing track numbers.
+3.4 added track number info (along with error handling) to the song search results.
+3.5 added temp fix for missing album names in the sub-menu. 
+    added track numbers to the album search results (with error handling for missing track numbers).
+    To Do: address issue with various artists being on the same album. Search for Bill & Ted for example
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -63,11 +67,20 @@ def search_by_song(db, query):
         # no match, use "Unknown Album" as the album name
         album_name = album_info.get("#text", "Unknown Album") if isinstance(album_info, dict) else "Unknown Album"
 
+        # added track number PLUS error handling for missing track numbers, 
+        # if there's no Order value, it displays 00, copied from below.
+        initial_order = song.get("Order", "0")
+        if not initial_order or initial_order == {}:
+            fixed_order = "00"
+        else:
+            fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
+
         # prints the song information
         print("") # Spacing line
         print(f"- Song Title: {song.get('Title')}")
-        print(f"Artist:     {song.get('Artist')}")
-        print(f"Album:      {album_name}",)
+        print(f"Artist: {song.get('Artist')}")
+        print(f"Album: {album_name}",)
+        print(f"Track Number: {fixed_order}")
 
 def search_by_album(db, query):
     """
@@ -101,17 +114,43 @@ def search_by_album(db, query):
         # grabs the unique album ID and title, then finds all songs that 
         # belong to that album by matching the album ID.
         album_id = album.get("-id")
-        album_title = album.get("Title")
-        album_songs = [
-            s.get("Title") for s in songs
-            if isinstance(s.get("Album"), dict) and s["Album"].get("-id") == album_id
-        ]
+
+        # needed to modify this as part of the blank album title support
+        basic_title = album.get("Title", "")
+        if not basic_title or basic_title == {}:
+            album_title = "No Album Name"
+        else:
+            album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
+
+        # album_title = album.get("Title")
+
+        # similar code as that under the artist selection
+        song_info = []
+        for s in songs:
+            song_album = s.get("Album")
+            if isinstance(song_album, dict) and song_album.get("-id") == album_id:
+                initial_order = s.get("Order", "0")
+                if not initial_order or initial_order == {}:
+                    fixed_order = "00"
+                else:
+                    fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
+
+                song_info.append({
+                    "order": fixed_order,
+                    "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
+                })
+
+        album_songs = [f"{s['order']}. {s['title']}" for s in song_info]
+
+        tracks_display = ', '.join(album_songs) if album_songs else 'No tracks found'
 
         # prints the album information
         print("")  # Spacing line
-        print(f"- Album Title: {album.get('Title')}")
-        print(f"Artist:      {album.get('AlbumArtist')}")
-        print(f"Songs:  {', '.join(album_songs) if album_songs else 'No tracks found'}")
+        print(f"- Album Title: {album_title}")
+        print(f"Artist: {album.get('AlbumArtist')}")
+        # print(f"Songs: {', '.join(album_songs) if album_songs else 'No tracks found'}")
+        print(f"Songs: {tracks_display}")
+
 
 def search_by_artist(db, query):
     """
@@ -190,8 +229,8 @@ def search_by_artist(db, query):
             print("")  # Spacing line
             # prints the artist, album, and song information
             print(f"- Artist Name: {artist.get('Name')}")
-            print(f"Albums:      {album_title}")
-            print(f"Songs:       {tracks_display}")
+            print(f"Albums: {album_title}")
+            print(f"Songs: {tracks_display}")
 
 def main():
     """
@@ -223,7 +262,7 @@ def main():
 
         # sub-menu
         elif menu_option == '1':
-            sub_menu = input("\n1. Song, 2. Album, 3. Artist\nSelect category: ").strip()
+            sub_menu = input("\n1. Song, 2. Album (for songs not associated with an album, type: {}), 3. Artist\nSelect category: ").strip()
             q = input("Enter query: ").strip().lower()
             if q and sub_menu == '1':
                 search_by_song(db, q)
