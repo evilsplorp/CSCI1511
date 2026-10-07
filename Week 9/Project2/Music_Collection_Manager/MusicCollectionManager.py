@@ -1,5 +1,5 @@
 """
-Music Collection Manager 3.7
+Music Collection Manager 3.8
 Raymond Black
 A searchable JSON file of artists, albums, and songs; 
 1.0 gets the JSON file and checks for errors. 
@@ -19,8 +19,10 @@ It only supports searching by song title.
 3.7 fixed duplication of the track list when displaying albums with various artists. 
     Now shows the track list only once, with the artist for each track.
     added support for searching for albums with no title. The user can search for "none", "blank", or "no album name" to find albums with no title.
-    To Do: add support for just hitting enter to find albums with no title.
+    To Do: add support for just hitting enter to find albums with no title. - DONE
     To Do: there's an issue with "various artists" albums not showing all the tracks for that album.
+3.8 Fixed issue with hitting enter to find albums with no title.
+    To Do: a single space still shows all albums.
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -117,10 +119,13 @@ def search_by_album(db, query):
         is_blank_title = not title_value or title_value == {}
         if is_blank_title and query.strip() in ["none", "blank", "no album name", ""]:
             matches.append(a)
+            # fixed the issue with searching for albums with no title, 
+            # but it now displays ALL albums, not just the ones with no title when using a single space.
         elif not is_blank_title:
-            title_str = title_value if isinstance(title_value, str) else str(title_value)
-            if query.lower() in title_str.lower():
-                matches.append(a)
+            if query.strip() != "":
+                title_str = title_value if isinstance(title_value, str) else str(title_value)
+                if query.lower() in title_str.lower():
+                    matches.append(a)
 
     # no match, print a message and return
     if not matches:
@@ -310,7 +315,9 @@ def main():
             q = input("Enter query: ").strip().lower()
             if q and sub_menu == '1':
                 search_by_song(db, q)
-            elif q and sub_menu == '2':
+            elif sub_menu == '2': # removed the q check here to allow searching for albums with no title
+                # but it broke the search result. It now displays ALL albums, not just the ones with no title. 
+                # to be fixed above in the search_by_album function.
                 search_by_album(db, q)
             elif q and sub_menu == '3':
                 search_by_artist(db, q)
