@@ -1,5 +1,5 @@
 """
-Music Collection Manager 3.5
+Music Collection Manager 3.7
 Raymond Black
 A searchable JSON file of artists, albums, and songs; 
 1.0 gets the JSON file and checks for errors. 
@@ -12,10 +12,15 @@ It only supports searching by song title.
 3.4 added track number info (along with error handling) to the song search results.
 3.5 added temp fix for missing album names in the sub-menu. 
     added track numbers to the album search results (with error handling for missing track numbers).
-    To Do: address issue with various artists being on the same album. Search for Bill & Ted for example
+    To Do: address issue with various artists being on the same album. Search for Bill & Ted for example - DONE
 3.6 added support for various artists on an album. It now shows the artist for each track on the album.
-    To Do: There's an issue with duplication of the track list when displaying albums with various artists. 
-           It shows the track list twice, once with the artist and once without. Need to fix that.
+    To Do: There's an issue with duplication of the track list when displaying albums with various artists. - DONE
+           It shows the track list twice, once with the artist and once without. Need to fix that. - Done
+3.7 fixed duplication of the track list when displaying albums with various artists. 
+    Now shows the track list only once, with the artist for each track.
+    added support for searching for albums with no title. The user can search for "none", "blank", or "no album name" to find albums with no title.
+    To Do: add support for just hitting enter to find albums with no title.
+    To Do: there's an issue with "various artists" albums not showing all the tracks for that album.
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -96,13 +101,26 @@ def search_by_album(db, query):
     songs = db.get("Songs", {}).get("Song", [])
 
     # loops through all the albums looking for a match to the text the user entered.
-    matches = [
-        a for a in albums 
-        if query.lower() in (
-            a.get("Title", "") if isinstance(a.get("Title"), str) 
-            else str(a.get("Title", ""))
-        ).lower()
-    ]
+    # matches = [
+    #     a for a in albums 
+    #     if query.lower() in (
+    #         a.get("Title", "") if isinstance(a.get("Title"), str) 
+    #         else str(a.get("Title", ""))
+    #     ).lower()
+    # ]
+
+    # trying to correctly handle albums with no title, so that they can be searched for by the user.
+
+    matches = []
+    for a in albums:
+        title_value = a.get("Title", "")
+        is_blank_title = not title_value or title_value == {}
+        if is_blank_title and query.strip() in ["none", "blank", "no album name", ""]:
+            matches.append(a)
+        elif not is_blank_title:
+            title_str = title_value if isinstance(title_value, str) else str(title_value)
+            if query.lower() in title_str.lower():
+                matches.append(a)
 
     # no match, print a message and return
     if not matches:
@@ -124,7 +142,7 @@ def search_by_album(db, query):
         # needed to modify this as part of the blank album title support
         basic_title = album.get("Title", "")
         if not basic_title or basic_title == {}:
-            album_title = "No Album Name"
+            album_title = "" # blank album title
         else:
             album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
@@ -156,7 +174,12 @@ def search_by_album(db, query):
         # startwith "Various Artists - " to get the albums with various artists
         is_various = isinstance(album_artist, str) and album_artist.startswith("Various Artists - ")
 
-        album_songs = [f"{s['order']}. {s['title']}" for s in song_info]
+
+        # this was causing the duplication of the track list when displaying albums with various artists.
+        # it now shows the track list only once, with the artist for each track.
+        # album_songs = [f"{s['order']}. {s['title']}" for s in song_info]
+
+        album_songs = []
 
         for s in song_info:
             if is_various:
@@ -170,7 +193,6 @@ def search_by_album(db, query):
         print("")  # Spacing line
         print(f"- Album Title: {album_title}")
         print(f"Artist: {album.get('AlbumArtist')}")
-        # print(f"Songs: {', '.join(album_songs) if album_songs else 'No tracks found'}")
         print(f"Songs: {tracks_display}")
 
 
@@ -217,7 +239,7 @@ def search_by_artist(db, query):
             basic_title = album.get("Title", "")
             # some albums have no title, so we need a default value
             if not basic_title or basic_title == {}:
-                album_title = "No Album Name"
+                album_title = "" # blank album title
             else: 
                 album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
@@ -251,7 +273,7 @@ def search_by_artist(db, query):
             print("")  # Spacing line
             # prints the artist, album, and song information
             print(f"- Artist Name: {artist.get('Name')}")
-            print(f"Albums: {album_title}")
+            print(f"Album: {album_title}")
             print(f"Songs: {tracks_display}")
 
 def main():
@@ -273,7 +295,7 @@ def main():
     while True:
 
         # simple menu for the user to select options
-        print("--- Music Collection Manager ---")
+        print("\n--- Music Collection Manager ---")
         print("1. Search Database\n2. Exit")
         menu_option = input("Enter choice (1-2): ").strip()
 
@@ -284,7 +306,7 @@ def main():
 
         # sub-menu
         elif menu_option == '1':
-            sub_menu = input("\n1. Song, 2. Album (for songs not associated with an album, type: {}), 3. Artist\nSelect category: ").strip()
+            sub_menu = input("\n1. Song, 2. Album (type 'none' for unassociated songs), 3. Artist\nSelect category: ").strip()
             q = input("Enter query: ").strip().lower()
             if q and sub_menu == '1':
                 search_by_song(db, q)
