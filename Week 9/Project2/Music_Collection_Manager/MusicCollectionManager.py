@@ -31,7 +31,8 @@ It only supports searching by song title.
     Note: Not applying this to artists, as I want Tom to bring up Tom and Tommmy, for example.
     BUGFIX: multiple artists on a track are not showing in results, but are being counted separately. - DONE
     Addressed display formatting when multiple songs are displayed.
-    To Do: Sort song search by Song Title
+    To Do: Sort song search by Song Title - DONE
+4.1 Song search now sorts alphabetically
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -110,6 +111,28 @@ def search_by_song(db, query):
     if not matches:
         print(f"\nNo songs found containing '{query}'.")
         return
+
+    # sorting songs by title.
+    sorting_pairs = []
+
+    # mapping everything out and checking for blanks, lowercase
+    for s in matches:
+        raw_t = s.get("Title", "")
+        clean_t = "" if (not raw_t or raw_t == {}) else str(raw_t).lower()
+
+        # in case multiple songs have the same name (they will)
+        song_id = str(s.get("-id"))
+
+        # title, song_id, original dictionary
+        sorting_pairs.append((clean_t, song_id, s))
+
+    # built in sorting
+    sorting_pairs.sort()
+
+    # builds the list
+    matches = [pair[2] for pair in sorting_pairs]
+    # end sorting songs by title
+    
     # matches found, print the results (and give a count)
     print(f"\nFound {len(matches)} matching song(s):")
 
