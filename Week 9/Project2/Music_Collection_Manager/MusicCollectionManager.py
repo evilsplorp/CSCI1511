@@ -1,5 +1,5 @@
 """
-Music Collection Manager 4.1
+Music Collection Manager 4.2
 Raymond Black
 A searchable JSON file of artists, albums, and songs; 
 1.0 gets the JSON file and checks for errors. 
