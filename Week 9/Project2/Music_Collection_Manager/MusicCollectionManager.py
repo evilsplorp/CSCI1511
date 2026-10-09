@@ -39,6 +39,8 @@ It only supports searching by song title.
     Added functions to convert fields to a string and deal with missing value, None, or {} AND
     Handle missing or empty track numbers, defaulting to '00'
     Updated menu to prevent invalid entries
+4.3 Additional refactoring
+    Consolidated puncuation stuff that was in both search_by_song and _album
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -69,7 +71,7 @@ def load_music_database(file_path):
             print(f"\nError: The music database file '{file_path}' is not a valid JSON.\n")
             return None
 
-# shared refactoring helpers v 4.2
+# shared refactoring helpers v4.2
 
 def get_clean_string(value, default=""):
     """
@@ -84,6 +86,18 @@ def extract_track_order(song):
     handles missing or empty track numbers, defaulting to '00'
     """
     return get_clean_string(song.get("Order"), default = "00")
+
+# shared refactoring helper v4.3
+
+def normalize_and_tokenize(text):
+    """
+    Removes punctuation and splits text into a lowercase word list to handle whole-word matches.
+    """
+    text_lower = text.lower()
+    punctuations = [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]
+    for punctuation in punctuations:
+        text_lower = text_lower.replace(punctuation, " ")
+    return text_lower.split()
 
 # search functions
 
@@ -111,17 +125,23 @@ def search_by_song(db, query):
         elif not is_blank_title:
             if not is_query_blank:
                 title_str = title_value if isinstance(title_value, str) else str(title_value)
-                song_title_words = title_str.lower()
 
-                # need to fix issue with partial matches, so that "an" 
-                # doesn't match "and" or "another", but does match "an".
-
-                # Visual Studio Code auto-generated the punctation list below
-                for punctuation in [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]:
-                    song_title_words = song_title_words.replace(punctuation, " ")
-
-                song_words = song_title_words.split()
+                # v4.3 refactor
+                song_words = normalize_and_tokenize(title_str)
                 query_words = clean_query.split()
+
+                # prior to V4.3 version
+                # song_title_words = title_str.lower()
+
+                # # need to fix issue with partial matches, so that "an" 
+                # # doesn't match "and" or "another", but does match "an".
+
+                # # Visual Studio Code auto-generated the punctation list below
+                # for punctuation in [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]:
+                #     song_title_words = song_title_words.replace(punctuation, " ")
+
+                # song_words = song_title_words.split()
+                # query_words = clean_query.split()
 
                 all_words_match = True
                 for word in query_words:
@@ -167,23 +187,9 @@ def search_by_song(db, query):
         # no match, use "Unknown Album" as the album name
         album_name = album_info.get("#text", "Unknown Album") if isinstance(album_info, dict) else "Unknown Album"
 
-        # added track number PLUS error handling for missing track numbers, 
-        # if there's no Order value, it displays 00, copied from below.
-
-
         # v4.2 version
         fixed_order = extract_track_order(song)
         clean_song_title = get_clean_string(song.get("Title"), default = "No Song Name")
-
-        # old, pre-4.2 version
-        # initial_order = song.get("Order", "0")
-        # if not initial_order or initial_order == {}:
-        #     fixed_order = "00"
-        # else:
-        #     fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
-
-        # raw_song_title = song.get('Title', "")
-        # clean_song_title = "No Song Name" if not raw_song_title or raw_song_title == {} else raw_song_title
 
         # prints the song information
         print("") # Spacing line
@@ -216,15 +222,20 @@ def search_by_album(db, query):
                 title_str = title_value if isinstance(title_value, str) else str(title_value)
                 album_title_words = title_str.lower()
 
-                # need to fix issue with partial matches, so that "an" 
-                # doesn't match "and" or "another", but does match "an".
-
-                # Visual Studio Code auto-generated the punctation list below
-                for punctuation in [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]:
-                    album_title_words = album_title_words.replace(punctuation, " ")
-
-                album_words = album_title_words.split()
+                # v4.3 refactor
+                album_words = normalize_and_tokenize(title_str)
                 query_words = clean_query.split()
+                
+                #prior to v4.3 version
+                # # need to fix issue with partial matches, so that "an" 
+                # # doesn't match "and" or "another", but does match "an".
+
+                # # Visual Studio Code auto-generated the punctation list below
+                # for punctuation in [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]:
+                #     album_title_words = album_title_words.replace(punctuation, " ")
+
+                # album_words = album_title_words.split()
+                # query_words = clean_query.split()
 
                 all_words_match = True
                 for word in query_words:
@@ -233,9 +244,6 @@ def search_by_album(db, query):
                         break
                 if all_words_match:
                     matches.append(a)
-
-                # if clean_query in title_str.lower():
-                #     matches.append(a)
 
     if not matches:
         print(f"\nNo albums found containing '{query}'.")
@@ -247,14 +255,6 @@ def search_by_album(db, query):
 
         album_id = album.get("-id")
         album_artist = album.get("AlbumArtist", "")
-
-
-        # pre - v4.2 version
-        # basic_title = album.get("Title", "")
-        # if not basic_title or basic_title == {}:
-        #     album_title = "" # blank album title
-        # else:
-        #     album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
         album_title = get_clean_string(album.get("Title"))
 
@@ -274,23 +274,6 @@ def search_by_album(db, query):
                     "title": get_clean_string(s.get("Title")),
                     "artist": str(track_artist)
                 })
-
-                # pre-v4.2 version
-                # initial_order = s.get("Order", "0")
-                # if not initial_order or initial_order == {}:
-                #     fixed_order = "00"
-                # else:
-                #     fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
-
-                # track_artist = s.get("Artist", "Unknown Artist")
-                # if isinstance(track_artist, dict):
-                #     track_artist = track_artist.get("#text", "Unknown Artist")
-
-                # song_info.append({
-                #     "order": fixed_order,
-                #     "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", "")),
-                #     "artist": str(track_artist)
-                # })
 
         is_various = isinstance(album_artist, str) and album_artist.startswith("Various Artists - ")
 
@@ -330,9 +313,6 @@ def search_by_artist(db, query):
 
         artist_name = artist.get("Name")
 
-        # need to collect albums that have multiple artists and 
-        # find ones with multiple artists on a single track
-
         # need an empty list
         multiple_artist_albums = []
         for s in songs:
@@ -371,16 +351,8 @@ def search_by_artist(db, query):
         for album in matching_albums:
             album_id = album.get("-id")
 
-
             # v4.2 version
             album_title = get_clean_string(album.get("Title"))
-
-            # pre-v4.2 version
-            basic_title = album.get("Title", "")
-            # if not basic_title or basic_title == {}:
-            #     album_title = "" 
-            # else: 
-            #     album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
             song_info = []
             for s in songs:
@@ -398,25 +370,12 @@ def search_by_artist(db, query):
                     and song_album.get("-id") == album_id
                 ):
 
-
                     # V4.2 version
                     fixed_order = extract_track_order(s)
                     song_info.append({
                         "order": fixed_order,
                         "title": get_clean_string(s.get("Title"))
                     })
-
-                    # pre-V4.2 version
-                    # initial_order = s.get("Order", "0")
-                    # if not initial_order or initial_order == {}:
-                    #     fixed_order = "00"
-                    # else:
-                    #     fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
-
-                    # song_info.append({
-                    #     "order": fixed_order,
-                    #     "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
-                    # })
 
             artist_songs = [f"{s['order']}. {s['title']}\n" for s in song_info]
 
