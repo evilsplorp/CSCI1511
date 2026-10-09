@@ -33,6 +33,12 @@ It only supports searching by song title.
     Addressed display formatting when multiple songs are displayed.
     To Do: Sort song search by Song Title - DONE
 4.1 Song search now sorts alphabetically
+    To Do: Extract functions to classes. 
+    To Do: Add any helper functions that can be shared across the code.
+4.2 Refactoring starts. 
+    Added functions to convert fields to a string and deal with missing value, None, or {} AND
+    Handle missing or empty track numbers, defaulting to '00'
+    Updated menu to prevent invalid entries
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -62,6 +68,24 @@ def load_music_database(file_path):
             # exit the program if the file is not a valid JSON
             print(f"\nError: The music database file '{file_path}' is not a valid JSON.\n")
             return None
+
+# shared refactoring helpers v 4.2
+
+def get_clean_string(value, default=""):
+    """
+    converts fields to a string. deals with missing value, None, or {}
+    """
+    if not value or value == {}:
+        return default
+    return value if isinstance(value, str) else str(value)
+
+def extract_track_order(song):
+    """
+    handles missing or empty track numbers, defaulting to '00'
+    """
+    return get_clean_string(song.get("Order"), default = "00")
+
+# search functions
 
 def search_by_song(db, query): 
     """
@@ -145,14 +169,21 @@ def search_by_song(db, query):
 
         # added track number PLUS error handling for missing track numbers, 
         # if there's no Order value, it displays 00, copied from below.
-        initial_order = song.get("Order", "0")
-        if not initial_order or initial_order == {}:
-            fixed_order = "00"
-        else:
-            fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
 
-        raw_song_title = song.get('Title', "")
-        clean_song_title = "No Song Name" if not raw_song_title or raw_song_title == {} else raw_song_title
+
+        # v4.2 version
+        fixed_order = extract_track_order(song)
+        clean_song_title = get_clean_string(song.get("Title"), default = "No Song Name")
+
+        # old, pre-4.2 version
+        # initial_order = song.get("Order", "0")
+        # if not initial_order or initial_order == {}:
+        #     fixed_order = "00"
+        # else:
+        #     fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
+
+        # raw_song_title = song.get('Title', "")
+        # clean_song_title = "No Song Name" if not raw_song_title or raw_song_title == {} else raw_song_title
 
         # prints the song information
         print("") # Spacing line
@@ -217,31 +248,49 @@ def search_by_album(db, query):
         album_id = album.get("-id")
         album_artist = album.get("AlbumArtist", "")
 
-        basic_title = album.get("Title", "")
-        if not basic_title or basic_title == {}:
-            album_title = "" # blank album title
-        else:
-            album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
+
+        # pre - v4.2 version
+        # basic_title = album.get("Title", "")
+        # if not basic_title or basic_title == {}:
+        #     album_title = "" # blank album title
+        # else:
+        #     album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
+
+        album_title = get_clean_string(album.get("Title"))
 
         song_info = []
         for s in songs:
             song_album = s.get("Album")
             if isinstance(song_album, dict) and song_album.get("-id") == album_id:
-                initial_order = s.get("Order", "0")
-                if not initial_order or initial_order == {}:
-                    fixed_order = "00"
-                else:
-                    fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
 
+                # v4.2 version
+                fixed_order = extract_track_order(s)
                 track_artist = s.get("Artist", "Unknown Artist")
                 if isinstance(track_artist, dict):
                     track_artist = track_artist.get("#text", "Unknown Artist")
 
                 song_info.append({
                     "order": fixed_order,
-                    "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", "")),
+                    "title": get_clean_string(s.get("Title")),
                     "artist": str(track_artist)
                 })
+
+                # pre-v4.2 version
+                # initial_order = s.get("Order", "0")
+                # if not initial_order or initial_order == {}:
+                #     fixed_order = "00"
+                # else:
+                #     fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
+
+                # track_artist = s.get("Artist", "Unknown Artist")
+                # if isinstance(track_artist, dict):
+                #     track_artist = track_artist.get("#text", "Unknown Artist")
+
+                # song_info.append({
+                #     "order": fixed_order,
+                #     "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", "")),
+                #     "artist": str(track_artist)
+                # })
 
         is_various = isinstance(album_artist, str) and album_artist.startswith("Various Artists - ")
 
@@ -322,11 +371,16 @@ def search_by_artist(db, query):
         for album in matching_albums:
             album_id = album.get("-id")
 
+
+            # v4.2 version
+            album_title = get_clean_string(album.get("Title"))
+
+            # pre-v4.2 version
             basic_title = album.get("Title", "")
-            if not basic_title or basic_title == {}:
-                album_title = "" 
-            else: 
-                album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
+            # if not basic_title or basic_title == {}:
+            #     album_title = "" 
+            # else: 
+            #     album_title = basic_title if isinstance(basic_title, str) else str(basic_title)
 
             song_info = []
             for s in songs:
@@ -344,23 +398,25 @@ def search_by_artist(db, query):
                     and song_album.get("-id") == album_id
                 ):
 
-                # replaced with above
-                # if (
-                #     s.get("Artist") == artist_name 
-                #     and isinstance(song_album, dict) 
-                #     and song_album.get("-id") == album_id
-                # ):
 
-                    initial_order = s.get("Order", "0")
-                    if not initial_order or initial_order == {}:
-                        fixed_order = "00"
-                    else:
-                        fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
-
+                    # V4.2 version
+                    fixed_order = extract_track_order(s)
                     song_info.append({
                         "order": fixed_order,
-                        "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
+                        "title": get_clean_string(s.get("Title"))
                     })
+
+                    # pre-V4.2 version
+                    # initial_order = s.get("Order", "0")
+                    # if not initial_order or initial_order == {}:
+                    #     fixed_order = "00"
+                    # else:
+                    #     fixed_order = initial_order if isinstance(initial_order, str) else str(initial_order)
+
+                    # song_info.append({
+                    #     "order": fixed_order,
+                    #     "title": s.get("Title") if isinstance(s.get("Title"), str) else str(s.get("Title", ""))
+                    # })
 
             artist_songs = [f"{s['order']}. {s['title']}\n" for s in song_info]
 
@@ -389,6 +445,7 @@ def main():
     while True:
 
         # simple menu for the user to select options
+        # updated menu to prevent invalid selections
         print("\n--- Music Collection Manager ---")
         print("1. Search Database\n2. Exit")
         menu_option = input("Enter choice (1-2): ").strip()
@@ -400,8 +457,19 @@ def main():
 
         # sub-menu
         elif menu_option == '1':
-            sub_menu = input("\n1. Song, 2. Album (type 'none' for songs not on an album), 3. Artist\nSelect category: ").strip()
+
+            while True:
+                print("\n-=-=-= Search Categories =-=-=-")
+                print("\n1. Song, 2. Album (type 'none' for songs not on an album), 3. Artist\n")
+                sub_menu = input("Select Category (1, 2, or 3): ").strip()
+
+                if sub_menu in ['1', '2', '3']:
+                    break
+                else:
+                    print("\nPlease choose 1, 2, or 3.")
+
             q = input("Enter query: ").strip().lower()
+                
             if q and sub_menu == '1':
                 search_by_song(db, q)
             elif sub_menu == '2': # removed the q check here to allow searching for albums with no title
@@ -410,6 +478,8 @@ def main():
                 search_by_album(db, q)
             elif q and sub_menu == '3':
                 search_by_artist(db, q)
+        else:
+            print("\nPlease enter 1 or 2.")
 
 if __name__ == "__main__":
     main()
