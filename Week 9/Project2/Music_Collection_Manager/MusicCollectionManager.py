@@ -1,5 +1,5 @@
 """
-Music Collection Manager 4.4
+Music Collection Manager 4.5
 Raymond Black
 A searchable JSON file of artists, albums, and songs; 
 1.0 gets the JSON file and checks for errors. 
@@ -43,6 +43,9 @@ It only supports searching by song title.
     Consolidated punctuation stuff that was in both search_by_song and _album
 4.4 Additional refactoring
     Consolidates the matching logic and blank value stuff for song and album
+4.5 Additional refactoring
+    Extracted helper functions to a separate Class file (search_utilities)
+    Updated main app file to call the Class
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -50,11 +53,15 @@ Allow the user to add new artists, albums, and songs to the JSON file
 Stretch goal 2:
 Allow the user to delete artists, albums, and songs from the JSON file
 
-2026-10-05
+2026-10-09
 """
 
 from pathlib import Path
 import json
+from search_utilities import MusicUtilities
+
+#v 4.5 instance of the class
+utilities = MusicUtilities()
 
 def load_music_database(file_path):
     """
@@ -74,53 +81,53 @@ def load_music_database(file_path):
             return None
 
 # shared refactoring helpers v4.2
+# moved to Class file from v4.5
+# def get_clean_string(value, default=""):
+#     """
+#     converts fields to a string. deals with missing value, None, or {}
+#     """
+#     if not value or value == {}:
+#         return default
+#     return value if isinstance(value, str) else str(value)
 
-def get_clean_string(value, default=""):
-    """
-    converts fields to a string. deals with missing value, None, or {}
-    """
-    if not value or value == {}:
-        return default
-    return value if isinstance(value, str) else str(value)
+# def extract_track_order(song):
+#     """
+#     handles missing or empty track numbers, defaulting to '00'
+#     """
+#     return get_clean_string(song.get("Order"), default = "00")
 
-def extract_track_order(song):
-    """
-    handles missing or empty track numbers, defaulting to '00'
-    """
-    return get_clean_string(song.get("Order"), default = "00")
+# # shared refactoring helper v4.3
 
-# shared refactoring helper v4.3
+# def normalize_and_tokenize(text):
+#     """
+#     Removes punctuation and splits text into a lowercase word list to handle whole-word matches.
+#     """
+#     text_lower = text.lower()
+#     punctuations = [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]
+#     for punctuation in punctuations:
+#         text_lower = text_lower.replace(punctuation, " ")
+#     return text_lower.split()
 
-def normalize_and_tokenize(text):
-    """
-    Removes punctuation and splits text into a lowercase word list to handle whole-word matches.
-    """
-    text_lower = text.lower()
-    punctuations = [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]
-    for punctuation in punctuations:
-        text_lower = text_lower.replace(punctuation, " ")
-    return text_lower.split()
+# # shared refactoring helper v4.4
 
-# shared refactoring helper v4.4
+# def matches_query(item_title, query, blank_keywords):
+#     """
+#     Centralizes full-word match logic and handles blank keyword rules.
+#     """
+#     clean_query = query.strip().lower()
+#     is_query_blank = query == "" or query.isspace()
+#     is_blank_title = not item_title or item_title == {}
 
-def matches_query(item_title, query, blank_keywords):
-    """
-    Centralizes full-word match logic and handles blank keyword rules.
-    """
-    clean_query = query.strip().lower()
-    is_query_blank = query == "" or query.isspace()
-    is_blank_title = not item_title or item_title == {}
+#     if is_blank_title:
+#         return (clean_query in blank_keywords) or is_query_blank
 
-    if is_blank_title:
-        return (clean_query in blank_keywords) or is_query_blank
+#     if not is_query_blank:
+#         title_str = get_clean_string(item_title)
+#         title_words = normalize_and_tokenize(title_str)
+#         query_words = clean_query.split()
+#         return all(word in title_words for word in query_words)
 
-    if not is_query_blank:
-        title_str = get_clean_string(item_title)
-        title_words = normalize_and_tokenize(title_str)
-        query_words = clean_query.split()
-        return all(word in title_words for word in query_words)
-
-    return False
+#     return False
 
 # search functions
 
@@ -134,38 +141,9 @@ def search_by_song(db, query):
     # v4.4 refactor
 
     blank_keywords = ["none", "blank", "no song title"]
-    matches = [s for s in songs if matches_query(s.get("Title"), query, blank_keywords)]
 
-    # pre-v4.4
-    # clean_query = query.strip().lower()
-    # is_query_blank = query == "" or query.isspace()
-
-    # # loops through all the songs looking for a match to the text the user entered.
-    # # matches = [s for s in songs if query in s.get("Title", "").lower()]
-
-    # matches = []
-    # for s in songs:
-    #     title_value = s.get("Title", "")
-    #     is_blank_title = not title_value or title_value == {}
-
-    #     if is_blank_title and (clean_query in ["none", "blank", "no song title"] or is_query_blank):
-    #         matches.append(s)
-
-    #     elif not is_blank_title:
-    #         if not is_query_blank:
-    #             title_str = title_value if isinstance(title_value, str) else str(title_value)
-
-    #             # v4.3 refactor
-    #             song_words = normalize_and_tokenize(title_str)
-    #             query_words = clean_query.split()
-
-    #             all_words_match = True
-    #             for word in query_words:
-    #                 if word not in song_words:
-    #                     all_words_match = False
-    #                     break
-    #             if all_words_match:
-    #                 matches.append(s)
+    # v4.5 refactor update. added 'utilities.' for the function
+    matches = [s for s in songs if utilities.matches_query(s.get("Title"), query, blank_keywords)]
 
     # no match, print a message and return
     if not matches:
@@ -174,22 +152,13 @@ def search_by_song(db, query):
 
     # sorting songs by title.
     sorting_pairs = []
-
-    # mapping everything out and checking for blanks, lowercase
     for s in matches:
-        raw_t = s.get("Title", "")
-        clean_t = "" if (not raw_t or raw_t == {}) else str(raw_t).lower()
-
-        # in case multiple songs have the same name (they will)
+        # v4.5 refactor update. added 'utilities.' for the function
+        clean_t = utilities.get_clean_string(s.get("Title")).lower()
         song_id = str(s.get("-id"))
-
-        # title, song_id, original dictionary
         sorting_pairs.append((clean_t, song_id, s))
 
-    # built in sorting
     sorting_pairs.sort()
-
-    # builds the list
     matches = [pair[2] for pair in sorting_pairs]
     # end sorting songs by title
     
@@ -204,8 +173,9 @@ def search_by_song(db, query):
         album_name = album_info.get("#text", "Unknown Album") if isinstance(album_info, dict) else "Unknown Album"
 
         # v4.2 version
-        fixed_order = extract_track_order(song)
-        clean_song_title = get_clean_string(song.get("Title"), default = "No Song Name")
+        # v4.5 refactor update. added 'utilities.' for the function
+        fixed_order = utilities.extract_track_order(song)
+        clean_song_title = utilities.get_clean_string(song.get("Title"), default = "No Song Name")
 
         # prints the song information
         print("") # Spacing line
@@ -224,36 +194,7 @@ def search_by_album(db, query):
 
     # v4.4 refactor
     blank_keywords = ["none", "blank", "no album name"]
-    matches = [a for a in albums if matches_query(a.get("Title"), query, blank_keywords)]
-
-    # pre-v4.4 
-    # matches = []
-    # for a in albums:
-    #     title_value = a.get("Title", "")
-    #     is_blank_title = not title_value or title_value == {}
-
-    #     clean_query = query.strip().lower()
-    #     is_query_blank = query == "" or query.isspace()
-
-    #     if is_blank_title and (clean_query in ["none", "blank", "no album name"] or is_query_blank):
-    #         matches.append(a)
-
-    #     elif not is_blank_title:
-    #         if not is_query_blank:
-    #             title_str = title_value if isinstance(title_value, str) else str(title_value)
-    #             album_title_words = title_str.lower()
-
-    #             # v4.3 refactor
-    #             album_words = normalize_and_tokenize(title_str)
-    #             query_words = clean_query.split()
-                
-    #             all_words_match = True
-    #             for word in query_words:
-    #                 if word not in album_words:
-    #                     all_words_match = False
-    #                     break
-    #             if all_words_match:
-    #                 matches.append(a)
+    matches = [a for a in albums if utilities.matches_query(a.get("Title"), query, blank_keywords)]
 
     if not matches:
         print(f"\nNo albums found containing '{query}'.")
@@ -265,8 +206,8 @@ def search_by_album(db, query):
 
         album_id = album.get("-id")
         album_artist = album.get("AlbumArtist", "")
-
-        album_title = get_clean_string(album.get("Title"))
+        # v4.5 refactor update. added 'utilities.' for the function
+        album_title = utilities.get_clean_string(album.get("Title"))
 
         song_info = []
         for s in songs:
@@ -274,14 +215,16 @@ def search_by_album(db, query):
             if isinstance(song_album, dict) and song_album.get("-id") == album_id:
 
                 # v4.2 version
-                fixed_order = extract_track_order(s)
+                # v4.5 refactor update. added 'utilities.' for the function
+                fixed_order = utilities.extract_track_order(s)
                 track_artist = s.get("Artist", "Unknown Artist")
                 if isinstance(track_artist, dict):
                     track_artist = track_artist.get("#text", "Unknown Artist")
 
                 song_info.append({
                     "order": fixed_order,
-                    "title": get_clean_string(s.get("Title")),
+                    # v4.5 refactor update. added 'utilities.' for the function
+                    "title": utilities.get_clean_string(s.get("Title")),
                     "artist": str(track_artist)
                 })
 
@@ -359,7 +302,8 @@ def search_by_artist(db, query):
             album_id = album.get("-id")
 
             # v4.2 version
-            album_title = get_clean_string(album.get("Title"))
+            # v4.5 refactor update. added 'utilities.' for the function
+            album_title = utilities.get_clean_string(album.get("Title"))
 
             song_info = []
             for s in songs:
@@ -378,10 +322,12 @@ def search_by_artist(db, query):
                 ):
 
                     # V4.2 version
-                    fixed_order = extract_track_order(s)
+                    # v4.5 refactor update. added 'utilities.' for the function
+                    fixed_order = utilities.extract_track_order(s)
                     song_info.append({
                         "order": fixed_order,
-                        "title": get_clean_string(s.get("Title"))
+                        # v4.5 refactor update. added 'utilities.' for the function
+                        "title": utilities.get_clean_string(s.get("Title"))
                     })
 
             artist_songs = [f"{s['order']}. {s['title']}\n" for s in song_info]
