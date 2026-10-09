@@ -1,5 +1,5 @@
 """
-Music Collection Manager 4.2
+Music Collection Manager 4.4
 Raymond Black
 A searchable JSON file of artists, albums, and songs; 
 1.0 gets the JSON file and checks for errors. 
@@ -40,7 +40,9 @@ It only supports searching by song title.
     Handle missing or empty track numbers, defaulting to '00'
     Updated menu to prevent invalid entries
 4.3 Additional refactoring
-    Consolidated puncuation stuff that was in both search_by_song and _album
+    Consolidated punctuation stuff that was in both search_by_song and _album
+4.4 Additional refactoring
+    Consolidates the matching logic and blank value stuff for song and album
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -99,6 +101,27 @@ def normalize_and_tokenize(text):
         text_lower = text_lower.replace(punctuation, " ")
     return text_lower.split()
 
+# shared refactoring helper v4.4
+
+def matches_query(item_title, query, blank_keywords):
+    """
+    Centralizes full-word match logic and handles blank keyword rules.
+    """
+    clean_query = query.strip().lower()
+    is_query_blank = query == "" or query.isspace()
+    is_blank_title = not item_title or item_title == {}
+
+    if is_blank_title:
+        return (clean_query in blank_keywords) or is_query_blank
+
+    if not is_query_blank:
+        title_str = get_clean_string(item_title)
+        title_words = normalize_and_tokenize(title_str)
+        query_words = clean_query.split()
+        return all(word in title_words for word in query_words)
+
+    return False
+
 # search functions
 
 def search_by_song(db, query): 
@@ -108,48 +131,41 @@ def search_by_song(db, query):
     # this looks at the JSON file for the Songs.Song information.
     songs = db.get("Songs", {}).get("Song", [])
 
-    clean_query = query.strip().lower()
-    is_query_blank = query == "" or query.isspace()
+    # v4.4 refactor
 
-    # loops through all the songs looking for a match to the text the user entered.
-    # matches = [s for s in songs if query in s.get("Title", "").lower()]
+    blank_keywords = ["none", "blank", "no song title"]
+    matches = [s for s in songs if matches_query(s.get("Title"), query, blank_keywords)]
 
-    matches = []
-    for s in songs:
-        title_value = s.get("Title", "")
-        is_blank_title = not title_value or title_value == {}
+    # pre-v4.4
+    # clean_query = query.strip().lower()
+    # is_query_blank = query == "" or query.isspace()
 
-        if is_blank_title and (clean_query in ["none", "blank", "no song title"] or is_query_blank):
-            matches.append(s)
+    # # loops through all the songs looking for a match to the text the user entered.
+    # # matches = [s for s in songs if query in s.get("Title", "").lower()]
 
-        elif not is_blank_title:
-            if not is_query_blank:
-                title_str = title_value if isinstance(title_value, str) else str(title_value)
+    # matches = []
+    # for s in songs:
+    #     title_value = s.get("Title", "")
+    #     is_blank_title = not title_value or title_value == {}
 
-                # v4.3 refactor
-                song_words = normalize_and_tokenize(title_str)
-                query_words = clean_query.split()
+    #     if is_blank_title and (clean_query in ["none", "blank", "no song title"] or is_query_blank):
+    #         matches.append(s)
 
-                # prior to V4.3 version
-                # song_title_words = title_str.lower()
+    #     elif not is_blank_title:
+    #         if not is_query_blank:
+    #             title_str = title_value if isinstance(title_value, str) else str(title_value)
 
-                # # need to fix issue with partial matches, so that "an" 
-                # # doesn't match "and" or "another", but does match "an".
+    #             # v4.3 refactor
+    #             song_words = normalize_and_tokenize(title_str)
+    #             query_words = clean_query.split()
 
-                # # Visual Studio Code auto-generated the punctation list below
-                # for punctuation in [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]:
-                #     song_title_words = song_title_words.replace(punctuation, " ")
-
-                # song_words = song_title_words.split()
-                # query_words = clean_query.split()
-
-                all_words_match = True
-                for word in query_words:
-                    if word not in song_words:
-                        all_words_match = False
-                        break
-                if all_words_match:
-                    matches.append(s)
+    #             all_words_match = True
+    #             for word in query_words:
+    #                 if word not in song_words:
+    #                     all_words_match = False
+    #                     break
+    #             if all_words_match:
+    #                 matches.append(s)
 
     # no match, print a message and return
     if not matches:
@@ -206,44 +222,38 @@ def search_by_album(db, query):
     albums = db.get("Albums", {}).get("Album", [])
     songs = db.get("Songs", {}).get("Song", [])
 
-    matches = []
-    for a in albums:
-        title_value = a.get("Title", "")
-        is_blank_title = not title_value or title_value == {}
+    # v4.4 refactor
+    blank_keywords = ["none", "blank", "no album name"]
+    matches = [a for a in albums if matches_query(a.get("Title"), query, blank_keywords)]
 
-        clean_query = query.strip().lower()
-        is_query_blank = query == "" or query.isspace()
+    # pre-v4.4 
+    # matches = []
+    # for a in albums:
+    #     title_value = a.get("Title", "")
+    #     is_blank_title = not title_value or title_value == {}
 
-        if is_blank_title and (clean_query in ["none", "blank", "no album name"] or is_query_blank):
-            matches.append(a)
+    #     clean_query = query.strip().lower()
+    #     is_query_blank = query == "" or query.isspace()
 
-        elif not is_blank_title:
-            if not is_query_blank:
-                title_str = title_value if isinstance(title_value, str) else str(title_value)
-                album_title_words = title_str.lower()
+    #     if is_blank_title and (clean_query in ["none", "blank", "no album name"] or is_query_blank):
+    #         matches.append(a)
 
-                # v4.3 refactor
-                album_words = normalize_and_tokenize(title_str)
-                query_words = clean_query.split()
+    #     elif not is_blank_title:
+    #         if not is_query_blank:
+    #             title_str = title_value if isinstance(title_value, str) else str(title_value)
+    #             album_title_words = title_str.lower()
+
+    #             # v4.3 refactor
+    #             album_words = normalize_and_tokenize(title_str)
+    #             query_words = clean_query.split()
                 
-                #prior to v4.3 version
-                # # need to fix issue with partial matches, so that "an" 
-                # # doesn't match "and" or "another", but does match "an".
-
-                # # Visual Studio Code auto-generated the punctation list below
-                # for punctuation in [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]:
-                #     album_title_words = album_title_words.replace(punctuation, " ")
-
-                # album_words = album_title_words.split()
-                # query_words = clean_query.split()
-
-                all_words_match = True
-                for word in query_words:
-                    if word not in album_words:
-                        all_words_match = False
-                        break
-                if all_words_match:
-                    matches.append(a)
+    #             all_words_match = True
+    #             for word in query_words:
+    #                 if word not in album_words:
+    #                     all_words_match = False
+    #                     break
+    #             if all_words_match:
+    #                 matches.append(a)
 
     if not matches:
         print(f"\nNo albums found containing '{query}'.")
@@ -328,8 +338,6 @@ def search_by_artist(db, query):
                 if compiled_id and compiled_id not in multiple_artist_albums:
                     multiple_artist_albums.append(compiled_id)
 
-        # matching_albums = [a for a in albums if a.get("AlbumArtist") == artist_name]
-
         # need an empty list
         matching_albums = []
 
@@ -346,7 +354,6 @@ def search_by_artist(db, query):
         if not matching_albums:
             print("Albums: none")
             continue
-
 
         for album in matching_albums:
             album_id = album.get("-id")
@@ -431,9 +438,7 @@ def main():
                 
             if q and sub_menu == '1':
                 search_by_song(db, q)
-            elif sub_menu == '2': # removed the q check here to allow searching for albums with no title
-                # but it broke the search result. It now displays ALL albums, not just the ones with no title. 
-                # to be fixed above in the search_by_album function.
+            elif sub_menu == '2':
                 search_by_album(db, q)
             elif q and sub_menu == '3':
                 search_by_artist(db, q)
