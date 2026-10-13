@@ -1,0 +1,9 @@
+This will find collisions between all the Sprites in two groups. A collision is determined by comparing the Sprite.rect attribute of each Sprite or by using the collided function if it is not None.
+
+Essentially, the groupcollide() manages all the sprites’ locations in 2 groups and, if the sprite.rect of a sprite in one group touches the sprite.rect in the other group, a collision is accepted.
+
+Using the dokill argument, one or both sprites can be removed from their respective groups. A laser fired from your ship to an enemy is an example of this. If your laser hits an enemy ship, both the laser and the enemy ship are removed from their respective groups.
+
+Adjustments can be made for exact pixel intersecting, allowing varying exactness in touching or overlapping of the sprites. 
+
+The output can be interpreted to calculate scores, trigger animations, subtract health (or lives), or make other changes.
