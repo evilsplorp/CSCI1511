@@ -1,7 +1,7 @@
 """
 Music Collection Manager 4.5
 Raymond Black
-A searchable JSON file of artists, albums, and songs; 
+A searchable JSON file of artists, albums, and songs;  
 1.0 gets the JSON file and checks for errors. 
 It only supports searching by song title.
 2.0 adds searching by album title and shows the songs on that album.
@@ -46,6 +46,11 @@ It only supports searching by song title.
 4.5 Additional refactoring
     Extracted helper functions to a separate Class file (search_utilities)
     Updated main app file to call the Class
+4.6 Additional refactoring
+    Extracted search functions to a separate Class file (search_displays)
+    Updated main app file to call the Class
+    Extracted menu to a separate Class file (menu)
+    Updated main app to call the Class
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -53,22 +58,26 @@ Allow the user to add new artists, albums, and songs to the JSON file
 Stretch goal 2:
 Allow the user to delete artists, albums, and songs from the JSON file
 
-2026-10-09
+2026-10-13
 """
 
 from pathlib import Path
 import json
 from search_utilities import MusicUtilities
+from search_displays import SearchDisplays
+from menu import Menu
 
-#v 4.5 instance of the class
+# v4.5 instance of the class
 utilities = MusicUtilities()
+
+# v4.6 instance of the class
+displays = SearchDisplays(utilities)
 
 def load_music_database(file_path):
     """
     Loads the JSON music database and check for errors.
     """
     if not file_path.exists():
-        # exit the program if the file does not exist
         print(f"\nError: The music database file '{file_path}' does not exist.\n")
         return None
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -76,113 +85,21 @@ def load_music_database(file_path):
             data = json.load(f)
             return data.get("MusicDatabase", data)
         except json.JSONDecodeError:
-            # exit the program if the file is not a valid JSON
             print(f"\nError: The music database file '{file_path}' is not a valid JSON.\n")
             return None
-
-# shared refactoring helpers v4.2
-# moved to Class file from v4.5
-# def get_clean_string(value, default=""):
-#     """
-#     converts fields to a string. deals with missing value, None, or {}
-#     """
-#     if not value or value == {}:
-#         return default
-#     return value if isinstance(value, str) else str(value)
-
-# def extract_track_order(song):
-#     """
-#     handles missing or empty track numbers, defaulting to '00'
-#     """
-#     return get_clean_string(song.get("Order"), default = "00")
-
-# # shared refactoring helper v4.3
-
-# def normalize_and_tokenize(text):
-#     """
-#     Removes punctuation and splits text into a lowercase word list to handle whole-word matches.
-#     """
-#     text_lower = text.lower()
-#     punctuations = [".", ",", "!", "?", ";", ":", "'", '"', "(", ")", "[", "]", "{", "}", "-", "_"]
-#     for punctuation in punctuations:
-#         text_lower = text_lower.replace(punctuation, " ")
-#     return text_lower.split()
-
-# # shared refactoring helper v4.4
-
-# def matches_query(item_title, query, blank_keywords):
-#     """
-#     Centralizes full-word match logic and handles blank keyword rules.
-#     """
-#     clean_query = query.strip().lower()
-#     is_query_blank = query == "" or query.isspace()
-#     is_blank_title = not item_title or item_title == {}
-
-#     if is_blank_title:
-#         return (clean_query in blank_keywords) or is_query_blank
-
-#     if not is_query_blank:
-#         title_str = get_clean_string(item_title)
-#         title_words = normalize_and_tokenize(title_str)
-#         query_words = clean_query.split()
-#         return all(word in title_words for word in query_words)
-
-#     return False
-
-# search functions
 
 def search_by_song(db, query): 
     """
     Searches for songs in the database by title.
     """
-    # this looks at the JSON file for the Songs.Song information.
     songs = db.get("Songs", {}).get("Song", [])
 
     # v4.4 refactor
-
     blank_keywords = ["none", "blank", "no song title"]
-
     # v4.5 refactor update. added 'utilities.' for the function
     matches = [s for s in songs if utilities.matches_query(s.get("Title"), query, blank_keywords)]
 
-    # no match, print a message and return
-    if not matches:
-        print(f"\nNo songs found containing '{query}'.")
-        return
-
-    # sorting songs by title.
-    sorting_pairs = []
-    for s in matches:
-        # v4.5 refactor update. added 'utilities.' for the function
-        clean_t = utilities.get_clean_string(s.get("Title")).lower()
-        song_id = str(s.get("-id"))
-        sorting_pairs.append((clean_t, song_id, s))
-
-    sorting_pairs.sort()
-    matches = [pair[2] for pair in sorting_pairs]
-    # end sorting songs by title
-    
-    # matches found, print the results (and give a count)
-    print(f"\nFound {len(matches)} matching song(s):")
-
-    # go through the Album section of the JSON file and get the Album name for each song.
-    for song in matches:
-        album_info = song.get("Album", {})
-
-        # no match, use "Unknown Album" as the album name
-        album_name = album_info.get("#text", "Unknown Album") if isinstance(album_info, dict) else "Unknown Album"
-
-        # v4.2 version
-        # v4.5 refactor update. added 'utilities.' for the function
-        fixed_order = utilities.extract_track_order(song)
-        clean_song_title = utilities.get_clean_string(song.get("Title"), default = "No Song Name")
-
-        # prints the song information
-        print("") # Spacing line
-        print(f"- Song Title: {clean_song_title}")
-        print(f"Artist: {song.get('Artist')}")
-        print(f"Album: {album_name}",)
-        print(f"Track Number: {fixed_order}")
+    return displays.song_search(query, matches)
 
 def search_by_album(db, query):
     """
@@ -196,54 +113,7 @@ def search_by_album(db, query):
     blank_keywords = ["none", "blank", "no album name"]
     matches = [a for a in albums if utilities.matches_query(a.get("Title"), query, blank_keywords)]
 
-    if not matches:
-        print(f"\nNo albums found containing '{query}'.")
-        return
-    
-    print(f"\nFound {len(matches)} matching album(s):")
-
-    for album in matches:
-
-        album_id = album.get("-id")
-        album_artist = album.get("AlbumArtist", "")
-        # v4.5 refactor update. added 'utilities.' for the function
-        album_title = utilities.get_clean_string(album.get("Title"))
-
-        song_info = []
-        for s in songs:
-            song_album = s.get("Album")
-            if isinstance(song_album, dict) and song_album.get("-id") == album_id:
-
-                # v4.2 version
-                # v4.5 refactor update. added 'utilities.' for the function
-                fixed_order = utilities.extract_track_order(s)
-                track_artist = s.get("Artist", "Unknown Artist")
-                if isinstance(track_artist, dict):
-                    track_artist = track_artist.get("#text", "Unknown Artist")
-
-                song_info.append({
-                    "order": fixed_order,
-                    # v4.5 refactor update. added 'utilities.' for the function
-                    "title": utilities.get_clean_string(s.get("Title")),
-                    "artist": str(track_artist)
-                })
-
-        is_various = isinstance(album_artist, str) and album_artist.startswith("Various Artists - ")
-
-        album_songs = []
-
-        for s in song_info:
-            if is_various:
-                album_songs.append(f"{s['order']}. {s['title']} by {s['artist']}\n")
-            else:
-                album_songs.append(f"{s['order']}. {s['title']}\n")
-
-        tracks_display = ''.join(album_songs) if album_songs else 'No tracks found'
-
-        print("")  # Spacing line
-        print(f"- Album Title: {album_title}")
-        print(f"Artist: {album.get('AlbumArtist')}")
-        print(f"Songs:\n{tracks_display}")
+    return displays.album_search(query, songs, matches)
 
 def search_by_artist(db, query):
     """
@@ -253,143 +123,24 @@ def search_by_artist(db, query):
     artists = db.get("Artists", {}).get("Artist", [])
     albums = db.get("Albums", {}).get("Album", [])
     songs = db.get("Songs", {}).get("Song", [])
-
     matches = [a for a in artists if query in a.get("Name", "").lower()]
-
-    if not matches:
-        print(f"\nNo artists found containing '{query}'.")
-        return
-
-    print(f"\nFound {len(matches)} matching artist(s):")
-
-    for artist in matches:
-
-        artist_name = artist.get("Name")
-
-        # need an empty list
-        multiple_artist_albums = []
-        for s in songs:
-            song_artist = s.get("Artist", "")
-
-            # check the artist field and split on ; and strip trailing spaces
-            artists_list = [name.strip() for name in str(song_artist).split(";")] if song_artist else []
-
-            # check for matching artists in the search and connect it to the album
-
-            if artist_name in artists_list and isinstance(s.get("Album"), dict):
-                compiled_id = s["Album"].get("-id")
-                if compiled_id and compiled_id not in multiple_artist_albums:
-                    multiple_artist_albums.append(compiled_id)
-
-        # need an empty list
-        matching_albums = []
-
-        for a in albums:
-            is_main_artist = a.get("AlbumArtist") == artist_name
-            is_compiliation_appeareance = a.get("-id") in multiple_artist_albums
-
-            if is_main_artist or is_compiliation_appeareance:
-                matching_albums.append(a)
-
-        print("")  # Spacing line for artist header
-        print(f"- Artist Name: {artist_name}")
-
-        if not matching_albums:
-            print("Albums: none")
-            continue
-
-        for album in matching_albums:
-            album_id = album.get("-id")
-
-            # v4.2 version
-            # v4.5 refactor update. added 'utilities.' for the function
-            album_title = utilities.get_clean_string(album.get("Title"))
-
-            song_info = []
-            for s in songs:
-                song_album = s.get("Album")
-                song_artist = s.get("Artist", "")
-
-                # split the track artists to get ones with multiple artists
-
-                track_artists = [name.strip() for name in str(song_artist).split(";")] if song_artist else []
-
-                # if the artist name shows up in the above and there's a matchiing song on the album...
-                if (
-                    artist_name in track_artists
-                    and isinstance(song_album, dict)
-                    and song_album.get("-id") == album_id
-                ):
-
-                    # V4.2 version
-                    # v4.5 refactor update. added 'utilities.' for the function
-                    fixed_order = utilities.extract_track_order(s)
-                    song_info.append({
-                        "order": fixed_order,
-                        # v4.5 refactor update. added 'utilities.' for the function
-                        "title": utilities.get_clean_string(s.get("Title"))
-                    })
-
-            artist_songs = [f"{s['order']}. {s['title']}\n" for s in song_info]
-
-            tracks_display = ''.join(artist_songs) if artist_songs else 'No tracks found'
-            print("")  # Spacing line
-            # print(f"- Artist Name: {artist.get('Name')}")
-            print(f"Album: {album_title}")
-            print(f"Songs:\n{tracks_display}")
+    return displays.artist_search(query, albums, songs, matches)
 
 def main():
     """
     Main function to run the Music Collection Manager.    
     """
-
-    # file location
     file_path = Path(__file__).parent / 'music.json'
-
-    # run the load_music_database function to get the database
     db = load_music_database(file_path)
-
-    # if there's no file or the format isn't JSON, exit the program with a message
     if db is None:
         print("Exiting program due to database load failure.\n")
         return
 
-    while True:
+    # v4.6 sets up menu object
+    menu = Menu(search_by_song, search_by_album, search_by_artist)
 
-        # simple menu for the user to select options
-        # updated menu to prevent invalid selections
-        print("\n--- Music Collection Manager ---")
-        print("1. Search Database\n2. Exit")
-        menu_option = input("Enter choice (1-2): ").strip()
-
-        # quit if option 2
-        if menu_option == '2':
-            print("\nGoodbye!\n")
-            break
-
-        # sub-menu
-        elif menu_option == '1':
-
-            while True:
-                print("\n-=-=-= Search Categories =-=-=-")
-                print("\n1. Song, 2. Album (type 'none' for songs not on an album), 3. Artist\n")
-                sub_menu = input("Select Category (1, 2, or 3): ").strip()
-
-                if sub_menu in ['1', '2', '3']:
-                    break
-                else:
-                    print("\nPlease choose 1, 2, or 3.")
-
-            q = input("Enter query: ").strip().lower()
-                
-            if q and sub_menu == '1':
-                search_by_song(db, q)
-            elif sub_menu == '2':
-                search_by_album(db, q)
-            elif q and sub_menu == '3':
-                search_by_artist(db, q)
-        else:
-            print("\nPlease enter 1 or 2.")
+    # v4.6 refactor update. calling menu
+    menu.mcm_menu(db)
 
 if __name__ == "__main__":
     main()

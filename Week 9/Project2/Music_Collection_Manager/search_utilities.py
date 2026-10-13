@@ -2,7 +2,7 @@
 Helper Class that contains multiple functions
 - Converts fields to a string and deals with missing value, None, or {}
 - Handles missing or empty track numbers, defaulting to '00'
-- Consolidates punctuation stuff that was in both search_by_song and _album
+- Consolidates punctuation stuff that was in both search_by_song and _album 
 - Consolidates the matching logic and blank value stuff for song and album
 """
 
