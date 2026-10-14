@@ -48,14 +48,11 @@ def mock_db():
         }
     }
 
-    # return {"songs": songs, "albums": albums, "artists": artists}
-
 def test_song_search_execution(displays, mock_db):
     """
     Test that song_search runs without raising any exceptions.
     """
     try:
-        # Access the list array matching the data structure sent by main app
         song_list = mock_db.get("Songs", {}).get("Song", [])
         displays.song_search(query="come", matches=song_list)
         success = True

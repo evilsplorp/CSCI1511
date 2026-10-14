@@ -25,25 +25,19 @@ class SearchDisplays:
             return
 
         sorting_pairs = []
+
         for s in matches:
-            # v4.5 refactor update. added 'utilities.' for the function
-            # v4.6 refactor update. added self for separate Class file
             clean_t = self.utilities.get_clean_string(s.get("Title")).lower()
             song_id = str(s.get("-id"))
             sorting_pairs.append((clean_t, song_id, s))
 
         sorting_pairs.sort()
         matches = [pair[2] for pair in sorting_pairs]
-        
         print(f"\nFound {len(matches)} matching song(s):")
 
         for song in matches:
             album_info = song.get("Album", {})
             album_name = album_info.get("#text", "Unknown Album") if isinstance(album_info, dict) else "Unknown Album"
-
-            # v4.2 version
-            # v4.5 refactor update. added 'utilities.' for the function
-            # v4.6 refactor update. added self for separate Class file
             fixed_order = self.utilities.extract_track_order(song)
             clean_song_title = self.utilities.get_clean_string(song.get("Title"), default = "No Song Name")
 
@@ -66,26 +60,20 @@ class SearchDisplays:
         for album in matches:
             album_id = album.get("-id")
             album_artist = album.get("AlbumArtist", "")
-            # v4.5 refactor update. added 'utilities.' for the function
-            # v4.6 refactor update. added self for separate Class file
             album_title = self.utilities.get_clean_string(album.get("Title"))
-
             song_info = []
+
             for s in songs:
                 song_album = s.get("Album")
                 if isinstance(song_album, dict) and song_album.get("-id") == album_id:
-                    # v4.2 version
-                    # v4.5 refactor update. added 'utilities.' for the function
-                    # v4.6 refactor update. added self for separate Class file
                     fixed_order = self.utilities.extract_track_order(s)
                     track_artist = s.get("Artist", "Unknown Artist")
+
                     if isinstance(track_artist, dict):
                         track_artist = track_artist.get("#text", "Unknown Artist")
 
                     song_info.append({
                         "order": fixed_order,
-                        # v4.5 refactor update. added 'utilities.' for the function
-                        # v4.6 refactor update. added self for separate Class file
                         "title": self.utilities.get_clean_string(s.get("Title")),
                         "artist": str(track_artist)
                     })
@@ -143,12 +131,7 @@ class SearchDisplays:
 
             for album in matching_albums:
                 album_id = album.get("-id")
-
-                # v4.2 version
-                # v4.5 refactor update. added 'utilities.' for the function
-                # v4.6 refactor update. added self for separate Class file
                 album_title = self.utilities.get_clean_string(album.get("Title"))
-
                 song_info = []
                 for s in songs:
                     song_album = s.get("Album")
@@ -160,19 +143,15 @@ class SearchDisplays:
                         and isinstance(song_album, dict)
                         and song_album.get("-id") == album_id
                     ):
-                        # V4.2 version
-                        # v4.5 refactor update. added 'utilities.' for the function
-                        # v4.6 refactor update. added self for separate Class file
+
                         fixed_order = self.utilities.extract_track_order(s)
                         song_info.append({
                             "order": fixed_order,
-                            # v4.5 refactor update. added 'utilities.' for the function
-                            # v4.6 refactor update. added self for separate Class file
+
                             "title": self.utilities.get_clean_string(s.get("Title"))
                         })
 
                 artist_songs = [f"{s['order']}. {s['title']}\n" for s in song_info]
-
                 tracks_display = ''.join(artist_songs) if artist_songs else 'No tracks found'
                 print("")
                 print(f"Album: {album_title}")

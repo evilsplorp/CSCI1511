@@ -1,3 +1,6 @@
+from pathlib import Path
+import json
+
 class Menu:
     """
     Maintains the menu structure for selecting search types
@@ -9,6 +12,43 @@ class Menu:
         self.search_song = search_song_func
         self.search_album = search_album_func
         self.search_artist = search_artist_func
+
+    def select_and_load_db(self):
+        """
+        Prompts the user for a JSON file, validates choices via try-except KeyError,
+        and ensures a valid database state is loaded before proceeding.
+        """
+        base_dir = Path(__file__).parent
+        files_map = {
+            "1": ("music.json", base_dir / "music.json"),
+            "2": ("bad_music.json", base_dir / "bad_music.json"),
+            "3": ("fake_music.json", base_dir / "fake_music.json")
+        }
+
+        while True:
+            print("\n--- Music File Selector ---")
+            print("1. Load Option 1 (music.json)")
+            print("2. Load Option 2 (bad_music.json)")
+            print("3. Load Option 3 (fake_music.json)")
+            file_choice = input("Select music database (1-3): ").strip()
+
+            try:
+                filename, chosen_path = files_map[file_choice]
+                print(f"\nLoading music file: '{filename}'...")
+            except KeyError:
+                print("Invalid choice. Please select option 1, 2, or 3.")
+                continue
+
+            if not chosen_path.exists():
+                print(f"\nError: The music database file '{chosen_path}' does not exist.\n")
+                continue  
+
+            with open(chosen_path, 'r', encoding='utf-8') as f:
+                try:
+                    data = json.load(f)
+                    return data.get("MusicDatabase", data)
+                except json.JSONDecodeError:
+                    print(f"\nError: The music database file '{chosen_path}' is not a valid JSON.\n")
 
     def mcm_menu(self, db):
         while True:

@@ -67,65 +67,36 @@ Allow the user to delete artists, albums, and songs from the JSON file
 """
 
 from pathlib import Path
-# pre-v4.9 refactor
-# import json
 from search_utilities import MusicUtilities
 from search_displays import SearchDisplays
 from menu import Menu
 
-# v4.5 instance of the class
 utilities = MusicUtilities()
-# v4.6 instance of the class
 displays = SearchDisplays(utilities)
-
-# v4.9 removing and implementing this as part of the menu Class refactor
-# def load_music_database(file_path):
-#     """
-#     Loads the JSON music database and check for errors.
-#     """
-#     if not file_path.exists():
-#         print(f"\nError: The music database file '{file_path}' does not exist.\n")
-#         return None
-#     with open(file_path, 'r', encoding='utf-8') as f:
-#         try:
-#             data = json.load(f)
-#             return data.get("MusicDatabase", data)
-#         except json.JSONDecodeError:
-#             print(f"\nError: The music database file '{file_path}' is not a valid JSON.\n")
-#             return None
 
 def search_by_song(db, query): 
     """
     Searches for songs in the database by title.
     """
     songs = db.get("Songs", {}).get("Song", [])
-
-    # v4.4 refactor
     blank_keywords = ["none", "blank", "no song title"]
-    # v4.5 refactor update. added 'utilities.' for the function
     matches = [s for s in songs if utilities.matches_query(s.get("Title"), query, blank_keywords)]
-
     return displays.song_search(query, matches)
 
 def search_by_album(db, query):
     """
     Searches for albums in the database by title. 
     """
-
     albums = db.get("Albums", {}).get("Album", [])
     songs = db.get("Songs", {}).get("Song", [])
-
-    # v4.4 refactor
     blank_keywords = ["none", "blank", "no album name"]
     matches = [a for a in albums if utilities.matches_query(a.get("Title"), query, blank_keywords)]
-
     return displays.album_search(query, songs, matches)
 
 def search_by_artist(db, query):
     """
     Searches for artists in the database by name.
     """
-
     artists = db.get("Artists", {}).get("Artist", [])
     albums = db.get("Albums", {}).get("Album", [])
     songs = db.get("Songs", {}).get("Song", [])
@@ -136,50 +107,9 @@ def main():
     """
     Main function to run the Music Collection Manager.    
     """
-    # # pre-v4.9 refactor
-    # base_dir = Path(__file__).parent
-    # files_map = {
-    #     "1": ("music.json", base_dir / "music.json"),
-    #     "2": ("bad_music.json", base_dir / "bad_music.json"),
-    #     "3": ("fake_music.json", base_dir / "fake_music.json")
-    # }
 
-    # # v4.7 addition: Prompt user for JSON file
-    # while True:
-    #     print("\n--- Music File Selector ---")
-    #     print("1. Load Option 1 (music.json)")
-    #     print("2. Load Option 2 (bad_music.json)")
-    #     print("3. Load Option 3 (fake_music.json)")
-    #     file_choice = input("Select music database (1-3): ").strip()
-
-    #     if file_choice in files_map:
-    #         filename, chosen_path = files_map[file_choice]
-    #         print(f"\nLoading music file: '{filename}'...")
-    #         break
-    #     print("Invalid choice. Please select option 1, 2, or 3.")
-
-    # # Execute your existing database load logic using the chosen path profile
-    # db = load_music_database(chosen_path)
-
-    # # Halt initialization if error-handling logic catches validation drops
-    # if db is None:
-    #     print("Exiting program due to database load failure.\n")
-    #     return
-
-    # pre-v4.7 version
-    # file_path = Path(__file__).parent / 'music.json'
-    # db = load_music_database(file_path)
-    # if db is None:
-    #     print("Exiting program due to database load failure.\n")
-    #     return
-
-    # v4.6 sets up menu object
     menu = Menu(search_by_song, search_by_album, search_by_artist)
-
-    # 4.9 refactor
     db = menu.select_and_load_db()
-
-    # v4.6 refactor update. calling menu
     menu.mcm_menu(db)
 
 if __name__ == "__main__":
