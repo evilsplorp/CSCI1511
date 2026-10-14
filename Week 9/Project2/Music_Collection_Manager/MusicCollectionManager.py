@@ -1,5 +1,5 @@
 """
-Music Collection Manager 4.5
+Music Collection Manager 4.7
 Raymond Black
 A searchable JSON file of artists, albums, and songs;  
 1.0 gets the JSON file and checks for errors. 
@@ -51,6 +51,7 @@ It only supports searching by song title.
     Updated main app file to call the Class
     Extracted menu to a separate Class file (menu)
     Updated main app to call the Class
+4.7 Added option to select from different JSON files to show the try-except handling
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -58,7 +59,7 @@ Allow the user to add new artists, albums, and songs to the JSON file
 Stretch goal 2:
 Allow the user to delete artists, albums, and songs from the JSON file
 
-2026-10-13
+2026-10-14
 """
 
 from pathlib import Path
@@ -69,7 +70,6 @@ from menu import Menu
 
 # v4.5 instance of the class
 utilities = MusicUtilities()
-
 # v4.6 instance of the class
 displays = SearchDisplays(utilities)
 
@@ -130,11 +130,41 @@ def main():
     """
     Main function to run the Music Collection Manager.    
     """
-    file_path = Path(__file__).parent / 'music.json'
-    db = load_music_database(file_path)
+    base_dir = Path(__file__).parent
+    files_map = {
+        "1": ("music.json", base_dir / "music.json"),
+        "2": ("bad_music.json", base_dir / "bad_music.json"),
+        "3": ("fake_music.json", base_dir / "fake_music.json")
+    }
+
+    # v4.7 addition: Prompt user for JSON file
+    while True:
+        print("\n--- Music File Selector ---")
+        print("1. Load Option 1 (music.json)")
+        print("2. Load Option 2 (bad_music.json)")
+        print("3. Load Option 3 (fake_music.json)")
+        file_choice = input("Select music database (1-3): ").strip()
+
+        if file_choice in files_map:
+            filename, chosen_path = files_map[file_choice]
+            print(f"\nLoading music file: '{filename}'...")
+            break
+        print("Invalid choice. Please select option 1, 2, or 3.")
+
+    # Execute your existing database load logic using the chosen path profile
+    db = load_music_database(chosen_path)
+
+    # Halt initialization if error-handling logic catches validation drops
     if db is None:
         print("Exiting program due to database load failure.\n")
         return
+
+    # pre-v4.7 version
+    # file_path = Path(__file__).parent / 'music.json'
+    # db = load_music_database(file_path)
+    # if db is None:
+    #     print("Exiting program due to database load failure.\n")
+    #     return
 
     # v4.6 sets up menu object
     menu = Menu(search_by_song, search_by_album, search_by_artist)
