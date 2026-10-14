@@ -1,5 +1,5 @@
 """
-Music Collection Manager 4.7
+Music Collection Manager 4.9
 Raymond Black
 A searchable JSON file of artists, albums, and songs;  
 1.0 gets the JSON file and checks for errors. 
@@ -52,6 +52,10 @@ It only supports searching by song title.
     Extracted menu to a separate Class file (menu)
     Updated main app to call the Class
 4.7 Added option to select from different JSON files to show the try-except handling
+4.8 Generate test files
+4.9 Additional refactoring
+    Extract database selection function and rewrite because the try-except was no longer used
+    Updated main app file to use extract database selector
 
 Stretch goal 1:
 Allow the user to add new artists, albums, and songs to the JSON file
@@ -63,7 +67,8 @@ Allow the user to delete artists, albums, and songs from the JSON file
 """
 
 from pathlib import Path
-import json
+# pre-v4.9 refactor
+# import json
 from search_utilities import MusicUtilities
 from search_displays import SearchDisplays
 from menu import Menu
@@ -73,20 +78,21 @@ utilities = MusicUtilities()
 # v4.6 instance of the class
 displays = SearchDisplays(utilities)
 
-def load_music_database(file_path):
-    """
-    Loads the JSON music database and check for errors.
-    """
-    if not file_path.exists():
-        print(f"\nError: The music database file '{file_path}' does not exist.\n")
-        return None
-    with open(file_path, 'r', encoding='utf-8') as f:
-        try:
-            data = json.load(f)
-            return data.get("MusicDatabase", data)
-        except json.JSONDecodeError:
-            print(f"\nError: The music database file '{file_path}' is not a valid JSON.\n")
-            return None
+# v4.9 removing and implementing this as part of the menu Class refactor
+# def load_music_database(file_path):
+#     """
+#     Loads the JSON music database and check for errors.
+#     """
+#     if not file_path.exists():
+#         print(f"\nError: The music database file '{file_path}' does not exist.\n")
+#         return None
+#     with open(file_path, 'r', encoding='utf-8') as f:
+#         try:
+#             data = json.load(f)
+#             return data.get("MusicDatabase", data)
+#         except json.JSONDecodeError:
+#             print(f"\nError: The music database file '{file_path}' is not a valid JSON.\n")
+#             return None
 
 def search_by_song(db, query): 
     """
@@ -130,34 +136,35 @@ def main():
     """
     Main function to run the Music Collection Manager.    
     """
-    base_dir = Path(__file__).parent
-    files_map = {
-        "1": ("music.json", base_dir / "music.json"),
-        "2": ("bad_music.json", base_dir / "bad_music.json"),
-        "3": ("fake_music.json", base_dir / "fake_music.json")
-    }
+    # # pre-v4.9 refactor
+    # base_dir = Path(__file__).parent
+    # files_map = {
+    #     "1": ("music.json", base_dir / "music.json"),
+    #     "2": ("bad_music.json", base_dir / "bad_music.json"),
+    #     "3": ("fake_music.json", base_dir / "fake_music.json")
+    # }
 
-    # v4.7 addition: Prompt user for JSON file
-    while True:
-        print("\n--- Music File Selector ---")
-        print("1. Load Option 1 (music.json)")
-        print("2. Load Option 2 (bad_music.json)")
-        print("3. Load Option 3 (fake_music.json)")
-        file_choice = input("Select music database (1-3): ").strip()
+    # # v4.7 addition: Prompt user for JSON file
+    # while True:
+    #     print("\n--- Music File Selector ---")
+    #     print("1. Load Option 1 (music.json)")
+    #     print("2. Load Option 2 (bad_music.json)")
+    #     print("3. Load Option 3 (fake_music.json)")
+    #     file_choice = input("Select music database (1-3): ").strip()
 
-        if file_choice in files_map:
-            filename, chosen_path = files_map[file_choice]
-            print(f"\nLoading music file: '{filename}'...")
-            break
-        print("Invalid choice. Please select option 1, 2, or 3.")
+    #     if file_choice in files_map:
+    #         filename, chosen_path = files_map[file_choice]
+    #         print(f"\nLoading music file: '{filename}'...")
+    #         break
+    #     print("Invalid choice. Please select option 1, 2, or 3.")
 
-    # Execute your existing database load logic using the chosen path profile
-    db = load_music_database(chosen_path)
+    # # Execute your existing database load logic using the chosen path profile
+    # db = load_music_database(chosen_path)
 
-    # Halt initialization if error-handling logic catches validation drops
-    if db is None:
-        print("Exiting program due to database load failure.\n")
-        return
+    # # Halt initialization if error-handling logic catches validation drops
+    # if db is None:
+    #     print("Exiting program due to database load failure.\n")
+    #     return
 
     # pre-v4.7 version
     # file_path = Path(__file__).parent / 'music.json'
@@ -168,6 +175,9 @@ def main():
 
     # v4.6 sets up menu object
     menu = Menu(search_by_song, search_by_album, search_by_artist)
+
+    # 4.9 refactor
+    db = menu.select_and_load_db()
 
     # v4.6 refactor update. calling menu
     menu.mcm_menu(db)
