@@ -1,0 +1,31 @@
+In Chapter 14, you will note that in the code example for the Button class, 
+the author has included a triple-quoted strings for the class, and functions. 
+In fact, in most of the code provided in the book, triple-quoted strings have 
+been provided for modules, methods, functions and classes. Discuss how these 
+docstrings help programmers with their workflow. Remember your experience and 
+the internet are your friends.
+
+
+
+The content in the docstring is displayed whenever you hover over the actual 
+class / function / module name or where it is called in the code. Because you 
+can include WHAT the class (etc.) does or needs in the docstring, it's not 
+necessary to jump back to where it was initially defined (or open up a separate 
+file, if it is a module) to see how it works. 
+
+A help function can call the docstring content using this format 
+(assuming this is from a module):
+
+from file_name import function_name
+help(function_name)
+
+This will display:
+
+function_name()
+	docstring content
+
+Having an explanation printed right in the terminal when running the application 
+is ideal when a developer is trying to debug or utilize an unfamiliar function or class.
+
+This can also be extended to writing documentation. While the raw docstring might 
+not be perfect for end-user documentation, it gives a tech writer a great starting point.
