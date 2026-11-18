@@ -7,6 +7,7 @@ Date: 2026-11-18
 """
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 # moved here, since it's a global setting
 plt.style.use("seaborn-v0_8")
