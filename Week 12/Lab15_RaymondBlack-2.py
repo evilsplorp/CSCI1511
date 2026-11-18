@@ -21,19 +21,21 @@ y_values_5k = [x**3 for x in x_values_5k]
 
 
 def plot_cubes(x_values, y_values, ax, color, size, title, axis_limits):
-    ax_small.scatter(x_values, y_values, color=color, s=size)
+    ax.scatter(x_values, y_values, color=color, s=size)
 
     # Set chart title and label axes.
-    ax_small.set_title(title, fontsize=24)
-    ax_small.set_xlabel("Value", fontsize=14)
-    ax_small.set_ylabel("Cube of Value", fontsize=14)
+    ax.set_title(title, fontsize=24)
+    ax.set_xlabel("Value", fontsize=14)
+    ax.set_ylabel("Cube of Value", fontsize=14)
 
     # Set size of tick labels.
-    ax_small.tick_params(labelsize=14)
+    ax.tick_params(labelsize=14)
 
     # Set the range for each axis. large values
-    ax_small.axis(axis_limits)
-    # ax_small.ticklabel_format(style="plain")
+    ax.axis(axis_limits)
+
+    ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
+    ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
 
 
 fig1, ax_small = plt.subplots(figsize=(12, 8))
@@ -57,21 +59,16 @@ plt.close(fig1)
 # begin set of 5k range values
 
 fig2, ax = plt.subplots(figsize=(12, 8))
-ax.scatter(x_values_5k, y_values_5k, color="blue", s=10)
 
-ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
-ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
-
-ax.set_title("First 5000 Cubic Numbers", fontsize=24)
-ax.set_xlabel("Value", fontsize=14)
-ax.set_ylabel("Cube of Value", fontsize=14)
-
-# Set size of tick labels.
-ax.tick_params(labelsize=14)
-
-# Set the range for each axis. large values
-ax.axis([0, 5_100, 0, 130_000_000_000])
-
+plot_cubes(
+    x_values_5k,
+    y_values_5k,
+    ax,
+    color="blue",
+    size=10,
+    title="First 5000 Cubic Numbers",
+    axis_limits=[0, 5_100, 0, 130_000_000_000],
+)
 
 # save to a file
 plt.savefig("cubes_5k.png", bbox_inches="tight")
