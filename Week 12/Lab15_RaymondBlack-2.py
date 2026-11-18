@@ -18,14 +18,13 @@ x_values_5k = range(1, 5001)
 y_values_5k = [x**3 for x in x_values_5k]
 
 # begin set of manual values
-fig1, ax_small = plt.subplots(figsize=(12, 8))
 
 
-def plot_cubes(x_values, y_values, ax_small):
-    ax_small.scatter(x_values, y_values, color="red", s=30)
+def plot_cubes(x_values, y_values, ax, color, size, title, axis_limits):
+    ax_small.scatter(x_values, y_values, color=color, s=size)
 
     # Set chart title and label axes.
-    ax_small.set_title("First Five Cubic Numbers", fontsize=24)
+    ax_small.set_title(title, fontsize=24)
     ax_small.set_xlabel("Value", fontsize=14)
     ax_small.set_ylabel("Cube of Value", fontsize=14)
 
@@ -33,11 +32,21 @@ def plot_cubes(x_values, y_values, ax_small):
     ax_small.tick_params(labelsize=14)
 
     # Set the range for each axis. large values
-    ax_small.axis([0, 6, 0, 150])
-    ax_small.ticklabel_format(style="plain")
+    ax_small.axis(axis_limits)
+    # ax_small.ticklabel_format(style="plain")
 
 
-plot_cubes(x_values, y_values, ax_small)
+fig1, ax_small = plt.subplots(figsize=(12, 8))
+
+plot_cubes(
+    x_values,
+    y_values,
+    ax_small,
+    color="red",
+    size=30,
+    title="First Five Cubic Numbers",
+    axis_limits=[0, 6, 0, 150],
+)
 
 # save to a file
 plt.savefig("cubes_5.png", bbox_inches="tight")
