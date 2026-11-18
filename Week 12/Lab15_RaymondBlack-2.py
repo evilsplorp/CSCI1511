@@ -3,19 +3,22 @@ Program name: Plotting Cubic Numbers
 Author: Raymond Black
 Purpose: The purpose of the program is to visualize cubic numbers.
 Resource: Starter code was obtained from Python Crash Course, 3rd Edition "scatter_squares.py" example.
-Date: 2026-11-17
+Date: 2026-11-18
 """
 
 import matplotlib.pyplot as plt
 
+# moved here, since it's a global setting
+plt.style.use("seaborn-v0_8")
+
+# numbers to be cubed and their cubed values
 x_values = [1, 2, 3, 4, 5]
 y_values = [1, 8, 27, 64, 125]
 
 x_values_5k = range(1, 5001)
 y_values_5k = [x**3 for x in x_values_5k]
 
-# manual values
-plt.style.use("seaborn-v0_8")
+# begin set of manual values
 fig, ax_small = plt.subplots(figsize=(12, 8))
 ax_small.scatter(x_values, y_values, color="red", s=10)
 
@@ -35,11 +38,10 @@ ax_small.ticklabel_format(style="plain")
 # save to a file
 plt.savefig("cubes_5.png", bbox_inches="tight")
 
-# end manual values
+# end set of manual values
 
-# 5k range values
+# begin set of 5k range values
 
-plt.style.use("seaborn-v0_8")
 fig, ax = plt.subplots(figsize=(12, 8))
 ax.scatter(x_values_5k, y_values_5k, color="blue", s=10)
 
@@ -62,7 +64,4 @@ ax.axis([0, 5100, 0, 130_000_000_000])
 # save to a file
 plt.savefig("cubes_5k.png", bbox_inches="tight")
 
-# end 5k range values
-
-# removed auto-display
-# plt.show()
+# end set of 5k range values
