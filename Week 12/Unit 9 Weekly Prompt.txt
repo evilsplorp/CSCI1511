@@ -1,0 +1,27 @@
+CSV is a flat formatted file, containing comma separated lists beneath a 
+single header value for each column. If you look at a spreadsheet file, 
+it's basically that. The top row is the first row in the CSV file. Each 
+subsequent row is a list of values in that defined order. The files are 
+generally smaller than JSON, as they only list the data name once, with 
+the values listed in each row.
+
+JSON uses key-value pairs, which supports a hierarchy as well as nested 
+records. JSON files are rigid in the formatting, while being loose with 
+the order of the key-value pairs. Because of that rigidity and the key 
+names being repeated for each associated value, the file sizes are much 
+larger than a CSV.
+
+CSV is best suited for plain text, standard numbers (be careful when 
+opening in a spreadsheet application, as the formatting and displayed 
+values can change), standardized dates and times, and simple boolean flags 
+that can be mapped to database columns.
+
+JSON is well-suited for complex data relationships that are ingested by APIs. 
+The contents of an order can be included all together. (OrderID 1 could 
+contain detailed information about multiple items ordered, for example).
+Unlike CSVs, there is a way to explicitly define something as a string 
+vs a number. 042 vs "042" is handled differently. The first would lose 
+the leading 0, while the second maintains it. 
+
+True, false, and null removes any conjecture about whether an empty 
+string is missing or blank (null is not necessarily blank!)
