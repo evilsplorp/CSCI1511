@@ -48,6 +48,7 @@ ax.scatter(x_values_5k, y_values_5k, color="blue", s=10)
 
 # Format y axis with commas
 ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
+ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
 
 # Set chart title and label axes.
 ax.set_title("First 5000 Cubic Numbers", fontsize=24)
